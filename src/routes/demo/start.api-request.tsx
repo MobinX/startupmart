@@ -27,7 +27,7 @@ function Home() {
       }}
     >
       <div className="w-full max-w-2xl p-8 rounded-xl backdrop-blur-md bg-black/50 shadow-xl border-8 border-black/10">
-        <h1 className="text-2xl mb-4">Start API Request Demo - Names List</h1>
+        <h1 className="text-2xl mb-4">Start Request Demo - Names List</h1>
         <ul className="mb-4 space-y-2">
           {names.map((name) => (
             <li
