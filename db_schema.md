@@ -20,8 +20,10 @@ erDiagram
     USERS {
         int id PK
         string email UK
-        string password_hash
+        string firebase_uid UK
+        string auth_provider "google, facebook, github, apple"
         string role "startup_owner, investor"
+        string current_pricing_plan "free, premium"
         timestamp created_at
     }
     STARTUPS {
@@ -122,6 +124,12 @@ erDiagram
         int startup_id FK
         timestamp created_at
     }
+    STARTUP_CONTACTS {
+        int id PK
+        int startup_id FK
+        string contact_email
+        string contact_phone
+    }
 ```
 
 ## Table Definitions
@@ -132,8 +140,10 @@ Stores user information for both startup owners and investors.
 
 -   `id`: Primary Key
 -   `email`: Unique email for login.
--   `password_hash`: Hashed password.
+-   `firebase_uid`: Unique Firebase user ID.
+-   `auth_provider`: Authentication provider (`google`, `facebook`, `github`, or `apple`).
 -   `role`: User role (`startup_owner` or `investor`).
+-   `current_pricing_plan`: The user's current subscription plan (`free` or `premium`). Defaults to `free`.
 -   `created_at`: Timestamp of user creation.
 
 ### `STARTUPS`
@@ -211,3 +221,12 @@ Tracks views on startup profiles.
 -   `user_id`: Foreign Key to `USERS` (the viewer).
 -   `startup_id`: Foreign Key to `STARTUPS` (the viewed startup).
 -   `created_at`: Timestamp of the view.
+
+### `STARTUP_CONTACTS`
+
+Stores the private contact information for startups, accessible only to premium investors.
+
+-   `id`: Primary Key
+-   `startup_id`: Foreign Key to `STARTUPS`.
+-   `contact_email`: The private contact email for the startup.
+-   `contact_phone`: The private contact phone for the startup.
