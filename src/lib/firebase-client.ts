@@ -13,12 +13,13 @@ import {
 
 // Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
+   apiKey: "AIzaSyDuGFR6DqZeCa6H8YYdS8Uj931moiM9jyo",
+  authDomain: "startupmart-5c760.firebaseapp.com",
+  projectId: "startupmart-5c760",
+  storageBucket: "startupmart-5c760.firebasestorage.app",
+  messagingSenderId: "55634184492",
+  appId: "1:55634184492:web:85e154fb343b7fdbb0c489",
+  measurementId: "G-Q72QNE707P"
 };
 
 // Initialize Firebase

@@ -1,6 +1,6 @@
 import { verifyIdToken } from './firebase';
-import { createDb } from '../db';
-import { users } from '../db/schema';
+import { createDb } from '@/db';
+import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 
 export interface AuthUser {
