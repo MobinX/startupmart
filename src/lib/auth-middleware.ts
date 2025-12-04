@@ -33,6 +33,7 @@ export async function getAuthUser(request: Request): Promise<AuthUser | null> {
         .get();
 
       if (!dbUser) {
+        
         // First time user - create in database
         // Note: We'll need to determine role during onboarding
         const [newUser] = await db
