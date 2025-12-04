@@ -15,6 +15,13 @@
       "when": 1764844113500,
       "tag": "0001_steady_post",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1764877219045,
+      "tag": "0002_cheerful_runaways",
+      "breakpoints": true
     }
   ]
 }

@@ -14,8 +14,9 @@ CREATE TABLE users_new (
 );
 
 -- Copy data if any exists (migrating role and email, firebase_uid will be set on next login)
+-- Copy data if any exists (migrating role and email, firebase_uid will be set on next login)
 INSERT INTO users_new (id, email, role, auth_provider, firebase_uid)
-SELECT id, email, role, 'google', '' FROM users;
+SELECT id, email, role, 'google', 'temp_uid_' || id FROM users;
 
 -- Drop old table and rename new one
 DROP TABLE users;

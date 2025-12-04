@@ -2,6 +2,7 @@ import { verifyIdToken } from './firebase';
 import { createDb } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { env } from "cloudflare:workers"
 
 export interface AuthUser {
   id: number;
@@ -23,7 +24,7 @@ export async function getAuthUser(request: Request): Promise<AuthUser | null> {
       const firebaseUser = await verifyIdToken(token);
 
       // Get or create user in our database
-      const db = createDb((request as any).env?.DB as D1Database);
+      const db = createDb(env?.DB as D1Database);
 
       let dbUser = await db
         .select()

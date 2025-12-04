@@ -5,10 +5,10 @@
 	"scripts": {
 		"dev": "vite dev --port 3000 --host",
 		"build": "vite build",
-		"serve": "vite preview",
+		"serve": "vite preview --host",
 		"test": "vitest run",
 		"deploy": "bun run build && wrangler deploy",
-		"preview": "bun run build && vite preview",
+		"preview": "bun run build && vite preview --host",
 		"cf-typegen": "wrangler types"
 	},
 	"dependencies": {
