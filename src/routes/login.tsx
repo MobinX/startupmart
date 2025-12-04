@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import {
+import * as firebaseClient from '@/lib/firebase-client';
+
+const {
   signInWithGoogle,
   signInWithFacebook,
   signInWithGithub,
@@ -8,8 +10,8 @@ import {
   signOut,
   onAuthStateChange,
   getIdToken,
-  getUserProfile
-} from '../lib/firebase-client';
+  getUserProfile,
+} = firebaseClient;
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,

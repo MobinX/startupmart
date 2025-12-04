@@ -1,5 +1,5 @@
 import { eq, and, sql } from 'drizzle-orm';
-import { Database } from '../db';
+import { Database } from '@/db';
 import {
   startups,
   startupFinancials,

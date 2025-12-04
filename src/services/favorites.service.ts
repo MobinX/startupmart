@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
-import { Database } from '../db';
-import { favorites, startups } from '../db/schema';
+import { Database } from '@/db';
+import { favorites, startups } from '@/db/schema';
 
 export class FavoritesService {
   constructor(private db: Database) {}
