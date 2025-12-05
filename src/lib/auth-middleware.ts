@@ -16,7 +16,7 @@ export interface AuthUser {
 export async function getAuthUser(request: Request): Promise<AuthUser | null> {
   const authHeader = request.headers.get('Authorization');
   let user: AuthUser | null = null;
-
+  console.log("IRUNNING")
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
