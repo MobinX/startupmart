@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `favorites_user_id_startup_id_unique` ON `favorites` (`user_id`,`startup_id`);

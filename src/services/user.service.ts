@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { Database } from '@/db';
 import { users } from '@/db/schema';
+import { NotFoundError, ConflictError, DatabaseError, ValidationError, AuthorizationError } from '@/lib/errors';
 
 export interface CreateUserInput {
   email: string;
@@ -32,7 +33,7 @@ export class UserService {
       .get();
 
     if (!user) {
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     return user;
@@ -47,44 +48,62 @@ export class UserService {
   }
 
   async createUser(userData: CreateUserInput) {
-    const [user] = await this.db
-      .insert(users)
-      .values({
-        ...userData,
-        currentPricingPlan: userData.currentPricingPlan || 'free',
-        createdAt: new Date(),
-      })
-      .returning();
+    try {
+      // Try to create user directly, relying on unique constraint for firebaseUid
+      const [user] = await this.db
+        .insert(users)
+        .values({
+          ...userData,
+          currentPricingPlan: userData.currentPricingPlan || 'free',
+          createdAt: new Date(),
+        })
+        .returning();
 
-    return user;
+      return user;
+    } catch (error: any) {
+      if (error.message?.includes('UNIQUE') || error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        throw new ConflictError('User already exists');
+      }
+      throw new DatabaseError('Failed to create user', error);
+    }
   }
 
   async updateUserProfile(userId: number, profileData: UpdateUserProfileInput) {
-    const [user] = await this.db
-      .update(users)
-      .set(profileData)
-      .where(eq(users.id, userId))
-      .returning();
+    try {
+      const [user] = await this.db
+        .update(users)
+        .set(profileData)
+        .where(eq(users.id, userId))
+        .returning();
 
-    if (!user) {
-      throw new Error('User not found');
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      throw new DatabaseError('Failed to update user profile', error);
     }
-
-    return user;
   }
 
   async updatePricingPlan(userId: number, plan: 'free' | 'premium') {
-    const [user] = await this.db
-      .update(users)
-      .set({ currentPricingPlan: plan })
-      .where(eq(users.id, userId))
-      .returning();
+    try {
+      const [user] = await this.db
+        .update(users)
+        .set({ currentPricingPlan: plan })
+        .where(eq(users.id, userId))
+        .returning();
 
-    if (!user) {
-      throw new Error('User not found');
+      if (!user) {
+        throw new NotFoundError('User not found');
+      }
+
+      return user;
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      throw new DatabaseError('Failed to update pricing plan', error);
     }
-
-    return user;
   }
 
   async getUserStats(userId: number): Promise<UserStats> {

@@ -44,7 +44,54 @@ Before diving into the service implementations, let's define the key data types 
 - **Free Investors:** Can view limited public startup information.
 - **All Users:** Can manage their own favorites and profile.
 
-## 4. Service Layer Design
+## 3. Error Types and Handling
+
+To ensure robust error handling across the service layer and API routes, we define custom error classes that encapsulate different error scenarios. These errors will be thrown by service methods and caught by API routes to return appropriate HTTP responses.
+
+### Custom Error Classes
+
+- **`ValidationError`:** Thrown when input data fails validation (e.g., missing required fields, invalid formats).
+- **`NotFoundError`:** Thrown when a requested resource (startup, user) does not exist.
+- **`AuthorizationError`:** Thrown when a user lacks permission to perform an action (e.g., updating another user's startup).
+- **`ConflictError`:** Thrown when an operation would violate business rules (e.g., duplicate favorite, invalid role transition).
+- **`DatabaseError`:** Thrown for database-related issues (e.g., transaction failures, constraint violations).
+
+### Error Handling in Services
+
+Each service method will throw specific errors based on the situation:
+
+- **Validation Errors:** For invalid input data.
+- **Not Found Errors:** When entities don't exist.
+- **Authorization Errors:** When access is denied.
+- **Conflict Errors:** For business rule violations.
+- **Database Errors:** For underlying data issues.
+
+### Error Handling in API Routes
+
+API routes will catch errors from service methods and return standardized JSON error responses:
+
+- **400 Bad Request:** For `ValidationError` (include field-specific error details).
+- **401 Unauthorized:** For authentication failures.
+- **403 Forbidden:** For `AuthorizationError`.
+- **404 Not Found:** For `NotFoundError`.
+- **409 Conflict:** For `ConflictError`.
+- **500 Internal Server Error:** For `DatabaseError` or unexpected errors.
+
+Error response format:
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Invalid input data",
+    "details": {
+      "field": "name",
+      "reason": "Required field is missing"
+    }
+  }
+}
+```
+
+## 5. Service Layer Design
 
 Each service will be a class that interacts with the database and contains all the business logic related to its domain.
 
@@ -58,6 +105,7 @@ This service will handle all CRUD operations and business logic for startup prof
     - Validates input data.
     - Creates the main startup record and all related sub-records (financials, traction, etc.) in a single database transaction.
     - Ensures that the user has the `startup_owner` role.
+    - **Throws:** `ValidationError` for invalid input, `AuthorizationError` if user lacks startup_owner role, `DatabaseError` for transaction failures.
   - `getStartupById(startupId: number, user?: AuthUser): Promise<StartupDetails>`
     - Fetches all data for a given startup.
     - Handles authorization:
@@ -65,6 +113,7 @@ This service will handle all CRUD operations and business logic for startup prof
       - Premium investors can see all details, including contact info.
       - Free investors see limited public data.
     - Increments the view count if the viewer is not the owner.
+    - **Throws:** `NotFoundError` if startup does not exist.
   - `getPublicStartups(filters: StartupFilters): Promise<Partial<Startup>[]>`
     - Fetches a list of startups for public view.
     - Applies filters for industry, team size, etc.
@@ -83,9 +132,11 @@ This service will handle all CRUD operations and business logic for startup prof
         - If no data is provided for that section: Leave the existing record unchanged.
       - **Transaction Safety:** All operations are wrapped in a database transaction to ensure atomicity.
       - **Partial Updates:** Users can update only specific sections without affecting others.
+    - **Throws:** `ValidationError` for invalid input, `NotFoundError` if startup does not exist, `AuthorizationError` if user is not the owner, `DatabaseError` for transaction failures.
   - `deleteStartup(startupId: number, userId: number): Promise<void>`
     - Verifies that the user is the owner of the startup.
     - Deletes the startup and all associated data (cascade delete).
+    - **Throws:** `NotFoundError` if startup does not exist, `AuthorizationError` if user is not the owner, `DatabaseError` for deletion failures.
 
 ### `user.service.ts`
 
@@ -95,17 +146,22 @@ This service will handle user-related operations and profile management.
   - `constructor(db: Drizzle.db)`
   - `getUserById(userId: number): Promise<User>`
     - Fetches a user by their ID.
+    - **Throws:** `NotFoundError` if user does not exist.
   - `getUserByFirebaseUid(firebaseUid: string): Promise<User | null>`
     - Fetches a user by their Firebase UID.
   - `createUser(userData: CreateUserInput): Promise<User>`
     - Creates a new user record.
     - Used during the authentication process.
+    - **Throws:** `ValidationError` for invalid input, `ConflictError` if user already exists, `DatabaseError` for insertion failures.
   - `updateUserProfile(userId: number, profileData: UpdateUserProfileInput): Promise<User>`
     - Updates a user's profile information.
+    - **Throws:** `ValidationError` for invalid input, `NotFoundError` if user does not exist, `AuthorizationError` if attempting to update another user's profile, `DatabaseError` for update failures.
   - `updatePricingPlan(userId: number, plan: 'free' | 'premium'): Promise<User>`
     - Updates a user's pricing plan.
+    - **Throws:** `NotFoundError` if user does not exist, `ValidationError` for invalid plan, `DatabaseError` for update failures.
   - `getUserStats(userId: number): Promise<UserStats>`
     - Returns statistics for a user (e.g., number of startups, favorites, etc.).
+    - **Throws:** `NotFoundError` if user does not exist.
 
 ### `favorites.service.ts`
 
@@ -116,18 +172,22 @@ This service will manage investors' favorite startups.
   - `addFavorite(userId: number, startupId: number): Promise<void>`
     - Adds a startup to a user's favorites list.
     - Prevents duplicate entries.
+    - **Throws:** `NotFoundError` if user or startup does not exist, `ConflictError` if already in favorites, `DatabaseError` for insertion failures.
   - `removeFavorite(userId: number, startupId: number): Promise<void>`
     - Removes a startup from a user's favorites list.
+    - **Throws:** `NotFoundError` if user or startup does not exist, `DatabaseError` for deletion failures.
   - `getFavorites(userId: number): Promise<Startup[]>`
     - Retrieves all favorite startups for a given user.
+    - **Throws:** `NotFoundError` if user does not exist.
 
-## 5. API Route Implementation
+## 6. API Route Implementation
 
 The API routes will be lean and act as a thin layer that calls the appropriate service methods. They will be responsible for:
 1.  Extracting request data (body, params, query).
 2.  Authenticating the user.
 3.  Calling the corresponding service method.
 4.  Returning the response as JSON.
+5.  Handling errors thrown by service methods and returning appropriate HTTP status codes and error messages.
 
 ### Startup API (`/api/startups`)
 
@@ -164,7 +224,7 @@ The API routes will be lean and act as a thin layer that calls the appropriate s
     -   Expects `{ startupId: number }` in the request body.
     -   Calls `favoritesService.removeFavorite(user.id, startupId)`.
 
-## 6. Mermaid Diagram: Request Flow
+## 7. Mermaid Diagram: Request Flow
 
 Here is a diagram illustrating the flow of a request from the client to the database:
 

@@ -11,10 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiUsersIndexRouteImport } from './routes/api/users/index'
 import { Route as ApiStartupsIndexRouteImport } from './routes/api/startups/index'
+import { Route as ApiFavoritesIndexRouteImport } from './routes/api/favorites/index'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
+import { Route as ApiUsersPlanRouteImport } from './routes/api/users/plan'
 import { Route as ApiStartupsIdRouteImport } from './routes/api/startups/$id'
 import { Route as ApiAuthVerifyRouteImport } from './routes/api/auth.verify'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
@@ -32,9 +35,19 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiUsersIndexRoute = ApiUsersIndexRouteImport.update({
+  id: '/api/users/',
+  path: '/api/users/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStartupsIndexRoute = ApiStartupsIndexRouteImport.update({
   id: '/api/startups/',
   path: '/api/startups/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFavoritesIndexRoute = ApiFavoritesIndexRouteImport.update({
+  id: '/api/favorites/',
+  path: '/api/favorites/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DemoStartServerFuncsRoute = DemoStartServerFuncsRouteImport.update({
@@ -50,6 +63,11 @@ const DemoStartApiRequestRoute = DemoStartApiRequestRouteImport.update({
 const DemoApiNamesRoute = DemoApiNamesRouteImport.update({
   id: '/demo/api/names',
   path: '/demo/api/names',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUsersPlanRoute = ApiUsersPlanRouteImport.update({
+  id: '/api/users/plan',
+  path: '/api/users/plan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiStartupsIdRoute = ApiStartupsIdRouteImport.update({
@@ -88,10 +106,13 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/api/auth/verify': typeof ApiAuthVerifyRoute
   '/api/startups/$id': typeof ApiStartupsIdRoute
+  '/api/users/plan': typeof ApiUsersPlanRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/api/favorites': typeof ApiFavoritesIndexRoute
   '/api/startups': typeof ApiStartupsIndexRoute
+  '/api/users': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -102,10 +123,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/api/auth/verify': typeof ApiAuthVerifyRoute
   '/api/startups/$id': typeof ApiStartupsIdRoute
+  '/api/users/plan': typeof ApiUsersPlanRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/api/favorites': typeof ApiFavoritesIndexRoute
   '/api/startups': typeof ApiStartupsIndexRoute
+  '/api/users': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -117,10 +141,13 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/api/auth/verify': typeof ApiAuthVerifyRoute
   '/api/startups/$id': typeof ApiStartupsIdRoute
+  '/api/users/plan': typeof ApiUsersPlanRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
+  '/api/favorites/': typeof ApiFavoritesIndexRoute
   '/api/startups/': typeof ApiStartupsIndexRoute
+  '/api/users/': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
   '/demo/start/ssr/spa-mode': typeof DemoStartSsrSpaModeRoute
@@ -133,10 +160,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/api/auth/verify'
     | '/api/startups/$id'
+    | '/api/users/plan'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/api/favorites'
     | '/api/startups'
+    | '/api/users'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -147,10 +177,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/api/auth/verify'
     | '/api/startups/$id'
+    | '/api/users/plan'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/api/favorites'
     | '/api/startups'
+    | '/api/users'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -161,10 +194,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/api/auth/verify'
     | '/api/startups/$id'
+    | '/api/users/plan'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
+    | '/api/favorites/'
     | '/api/startups/'
+    | '/api/users/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
     | '/demo/start/ssr/spa-mode'
@@ -176,10 +212,13 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   ApiAuthVerifyRoute: typeof ApiAuthVerifyRoute
   ApiStartupsIdRoute: typeof ApiStartupsIdRoute
+  ApiUsersPlanRoute: typeof ApiUsersPlanRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
   DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
+  ApiFavoritesIndexRoute: typeof ApiFavoritesIndexRoute
   ApiStartupsIndexRoute: typeof ApiStartupsIndexRoute
+  ApiUsersIndexRoute: typeof ApiUsersIndexRoute
   DemoStartSsrDataOnlyRoute: typeof DemoStartSsrDataOnlyRoute
   DemoStartSsrFullSsrRoute: typeof DemoStartSsrFullSsrRoute
   DemoStartSsrSpaModeRoute: typeof DemoStartSsrSpaModeRoute
@@ -202,11 +241,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/users/': {
+      id: '/api/users/'
+      path: '/api/users'
+      fullPath: '/api/users'
+      preLoaderRoute: typeof ApiUsersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/startups/': {
       id: '/api/startups/'
       path: '/api/startups'
       fullPath: '/api/startups'
       preLoaderRoute: typeof ApiStartupsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/favorites/': {
+      id: '/api/favorites/'
+      path: '/api/favorites'
+      fullPath: '/api/favorites'
+      preLoaderRoute: typeof ApiFavoritesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/demo/start/server-funcs': {
@@ -228,6 +281,13 @@ declare module '@tanstack/react-router' {
       path: '/demo/api/names'
       fullPath: '/demo/api/names'
       preLoaderRoute: typeof DemoApiNamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/users/plan': {
+      id: '/api/users/plan'
+      path: '/api/users/plan'
+      fullPath: '/api/users/plan'
+      preLoaderRoute: typeof ApiUsersPlanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/startups/$id': {
@@ -280,10 +340,13 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   ApiAuthVerifyRoute: ApiAuthVerifyRoute,
   ApiStartupsIdRoute: ApiStartupsIdRoute,
+  ApiUsersPlanRoute: ApiUsersPlanRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
   DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
+  ApiFavoritesIndexRoute: ApiFavoritesIndexRoute,
   ApiStartupsIndexRoute: ApiStartupsIndexRoute,
+  ApiUsersIndexRoute: ApiUsersIndexRoute,
   DemoStartSsrDataOnlyRoute: DemoStartSsrDataOnlyRoute,
   DemoStartSsrFullSsrRoute: DemoStartSsrFullSsrRoute,
   DemoStartSsrSpaModeRoute: DemoStartSsrSpaModeRoute,

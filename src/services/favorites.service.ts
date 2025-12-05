@@ -1,57 +1,58 @@
 import { eq, and } from 'drizzle-orm';
 import { Database } from '@/db';
 import { favorites, startups } from '@/db/schema';
+import { NotFoundError, ConflictError, DatabaseError } from '@/lib/errors';
 
 export class FavoritesService {
   constructor(private db: Database) {}
 
   async addFavorite(userId: number, startupId: number) {
-    // Check if startup exists
-    const startup = await this.db
-      .select()
-      .from(startups)
-      .where(eq(startups.id, startupId))
-      .get();
-
-    if (!startup) {
-      throw new Error('Startup not found');
+    try {
+      // Add to favorites directly, relying on DB constraints
+      await this.db.insert(favorites).values({
+        userId,
+        startupId,
+        createdAt: new Date(),
+      });
+    } catch (error: any) {
+      const errorMessage = error.message || '';
+      const causeMessage = error.cause?.message || '';
+      
+      // Handle unique constraint violation (already favorited)
+      if (
+        errorMessage.includes('UNIQUE') || 
+        causeMessage.includes('UNIQUE') ||
+        error.code === 'SQLITE_CONSTRAINT_UNIQUE'
+      ) {
+        throw new ConflictError('Startup already in favorites');
+      }
+      // Handle foreign key violation (startup doesn't exist)
+      if (
+        errorMessage.includes('FOREIGN KEY') || 
+        causeMessage.includes('FOREIGN KEY') ||
+        error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY'
+      ) {
+        throw new NotFoundError('Startup not found');
+      }
+      throw new DatabaseError('Failed to add favorite', error);
     }
-
-    // Check if already favorited
-    const existingFavorite = await this.db
-      .select()
-      .from(favorites)
-      .where(and(eq(favorites.userId, userId), eq(favorites.startupId, startupId)))
-      .get();
-
-    if (existingFavorite) {
-      throw new Error('Startup already in favorites');
-    }
-
-    // Add to favorites
-    await this.db.insert(favorites).values({
-      userId,
-      startupId,
-      createdAt: new Date(),
-    });
   }
 
   async removeFavorite(userId: number, startupId: number) {
-    // Check if favorite exists first
-    const existingFavorite = await this.db
-      .select()
-      .from(favorites)
-      .where(and(eq(favorites.userId, userId), eq(favorites.startupId, startupId)))
-      .get();
+    try {
+      // Remove from favorites and check if anything was deleted
+      const result = await this.db
+        .delete(favorites)
+        .where(and(eq(favorites.userId, userId), eq(favorites.startupId, startupId)))
+        .returning({ id: favorites.startupId });
 
-    if (!existingFavorite) {
-      throw new Error('Favorite not found');
+      if (result.length === 0) {
+        throw new NotFoundError('Favorite not found');
+      }
+    } catch (error) {
+      if (error instanceof NotFoundError) throw error;
+      throw new DatabaseError('Failed to remove favorite', error);
     }
-
-    // Remove from favorites
-    await this.db
-      .delete(favorites)
-      .where(and(eq(favorites.userId, userId), eq(favorites.startupId, startupId)));
   }
 
   async getFavorites(userId: number) {

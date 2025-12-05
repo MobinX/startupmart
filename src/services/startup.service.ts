@@ -10,8 +10,10 @@ import {
   startupAssets,
   startupContacts,
   startupViews,
-} from '../db/schema';
-import { AuthUser } from '../lib/auth-middleware';
+  favorites,
+} from '@/db/schema';
+import { AuthUser } from '@/lib/auth-middleware';
+import { ValidationError, NotFoundError, AuthorizationError, DatabaseError } from '@/lib/errors';
 
 export interface CreateStartupInput {
   startup: {
@@ -134,12 +136,15 @@ export class StartupService {
   async createStartup(userId: number, data: CreateStartupInput) {
     // Verify user role
     if (!data.startup) {
-      throw new Error('Startup data is required');
+      throw new ValidationError('Startup data is required');
     }
 
-    return await this.db.transaction(async (tx) => {
-      // Insert main startup record
-      const [startup] = await tx
+    try {
+      // D1 does not support interactive transactions with return values in the middle.
+      // We must insert the startup first to get the ID, then batch insert the rest.
+      
+      // 1. Insert main startup record
+      const [startup] = await this.db
         .insert(startups)
         .values({
           userId,
@@ -150,152 +155,128 @@ export class StartupService {
 
       const startupId = startup.id;
 
-      // Insert related records if provided
+      // 2. Prepare related records for batch insertion
+      const batchOps = [];
+
       if (data.financials) {
-        await tx.insert(startupFinancials).values({
+        batchOps.push(this.db.insert(startupFinancials).values({
           startupId,
           ...data.financials,
-        });
+        }));
       }
 
       if (data.traction) {
-        await tx.insert(startupTraction).values({
+        batchOps.push(this.db.insert(startupTraction).values({
           startupId,
           ...data.traction,
-        });
+        }));
       }
 
       if (data.salesMarketing) {
-        await tx.insert(startupSalesMarketing).values({
+        batchOps.push(this.db.insert(startupSalesMarketing).values({
           startupId,
           ...data.salesMarketing,
-        });
+        }));
       }
 
       if (data.operational) {
-        await tx.insert(startupOperational).values({
+        batchOps.push(this.db.insert(startupOperational).values({
           startupId,
           ...data.operational,
-        });
+        }));
       }
 
       if (data.legal) {
-        await tx.insert(startupLegal).values({
+        batchOps.push(this.db.insert(startupLegal).values({
           startupId,
           ...data.legal,
-        });
+        }));
       }
 
       if (data.assets) {
-        await tx.insert(startupAssets).values({
+        batchOps.push(this.db.insert(startupAssets).values({
           startupId,
           ...data.assets,
-        });
+        }));
       }
 
       if (data.contacts) {
-        await tx.insert(startupContacts).values({
+        batchOps.push(this.db.insert(startupContacts).values({
           startupId,
           ...data.contacts,
-        });
+        }));
+      }
+
+      // 3. Execute batch if there are related records
+      if (batchOps.length > 0) {
+        await this.db.batch(batchOps as any);
       }
 
       return startup;
-    });
+    } catch (error) {
+      throw new DatabaseError('Failed to create startup', error);
+    }
   }
 
   async getStartupById(startupId: number, user?: AuthUser): Promise<StartupDetails> {
-    // Get main startup data
-    const startup = await this.db
+    // Fetch all data in a single query using left joins
+    const rows = await this.db
       .select()
       .from(startups)
-      .where(eq(startups.id, startupId))
-      .get();
+      .leftJoin(startupFinancials, eq(startups.id, startupFinancials.startupId))
+      .leftJoin(startupTraction, eq(startups.id, startupTraction.startupId))
+      .leftJoin(startupSalesMarketing, eq(startups.id, startupSalesMarketing.startupId))
+      .leftJoin(startupOperational, eq(startups.id, startupOperational.startupId))
+      .leftJoin(startupLegal, eq(startups.id, startupLegal.startupId))
+      .leftJoin(startupAssets, eq(startups.id, startupAssets.startupId))
+      .leftJoin(startupContacts, eq(startups.id, startupContacts.startupId))
+      .where(eq(startups.id, startupId));
 
-    if (!startup) {
-      throw new Error('Startup not found');
+    if (rows.length === 0) {
+      throw new NotFoundError('Startup not found');
     }
+
+    const row = rows[0];
+    const startup = row.startups;
 
     // Check authorization
     const isOwner = user?.id === startup.userId;
     const isPremium = user?.currentPricingPlan === 'premium';
 
     if (!isOwner && !isPremium) {
-      throw new Error('Premium subscription required to view startup details');
+      throw new AuthorizationError('Premium subscription required to view startup details');
     }
 
     // Record view for analytics (only for non-owners)
     if (user && !isOwner) {
-      await this.db.insert(startupViews).values({
+      // Fire and forget view recording to not block response
+      this.db.insert(startupViews).values({
         userId: user.id,
         startupId,
         createdAt: new Date(),
-      });
+      }).catch(err => console.error('Failed to record view', err));
     }
-
-    // Get all related data
-    const [financials] = await this.db
-      .select()
-      .from(startupFinancials)
-      .where(eq(startupFinancials.startupId, startupId))
-      .limit(1);
-
-    const [traction] = await this.db
-      .select()
-      .from(startupTraction)
-      .where(eq(startupTraction.startupId, startupId))
-      .limit(1);
-
-    const [salesMarketing] = await this.db
-      .select()
-      .from(startupSalesMarketing)
-      .where(eq(startupSalesMarketing.startupId, startupId))
-      .limit(1);
-
-    const [operational] = await this.db
-      .select()
-      .from(startupOperational)
-      .where(eq(startupOperational.startupId, startupId))
-      .limit(1);
-
-    const [legal] = await this.db
-      .select()
-      .from(startupLegal)
-      .where(eq(startupLegal.startupId, startupId))
-      .limit(1);
-
-    const [assets] = await this.db
-      .select()
-      .from(startupAssets)
-      .where(eq(startupAssets.startupId, startupId))
-      .limit(1);
-
-    const [contacts] = await this.db
-      .select()
-      .from(startupContacts)
-      .where(eq(startupContacts.startupId, startupId))
-      .limit(1);
 
     // Get view count for owners
     let viewCount: number | undefined;
     if (isOwner) {
       const views = await this.db
-        .select()
+        .select({ count: sql<number>`count(*)` })
         .from(startupViews)
         .where(eq(startupViews.startupId, startupId));
-
-      viewCount = views.length;
+      
+      viewCount = views[0]?.count || 0;
     }
 
     return {
       ...startup,
-      financials: financials || null,
-      traction: traction || null,
-      salesMarketing: salesMarketing || null,
-      operational: operational || null,
-      legal: legal || null,
-      assets: assets || null,
-      contacts: contacts || null,
+      financials: row.startup_financials || null,
+      traction: row.startup_traction || null,
+      salesMarketing: row.startup_sales_marketing || null,
+      operational: row.startup_operational || null,
+      legal: row.startup_legal || null,
+      assets: row.startup_assets || null,
+      contacts: row.startup_contacts || null,
       viewCount,
     };
   }
@@ -352,104 +333,97 @@ export class StartupService {
   }
 
   async updateStartup(startupId: number, userId: number, data: UpdateStartupInput) {
-    // Verify ownership
+    // Verify ownership - optimize to select only userId
     const existingStartup = await this.db
-      .select()
+      .select({ userId: startups.userId })
       .from(startups)
-      .where(and(eq(startups.id, startupId), eq(startups.userId, userId)))
+      .where(eq(startups.id, startupId))
       .get();
 
     if (!existingStartup) {
-      throw new Error('Startup not found or access denied');
+      throw new NotFoundError('Startup not found');
     }
 
-    return await this.db.transaction(async (tx) => {
+    if (existingStartup.userId !== userId) {
+      throw new AuthorizationError('You are not authorized to update this startup');
+    }
+
+    try {
+      // Check existence of related records to decide between UPDATE and INSERT
+      // We can't use onConflictDoUpdate because there are no unique constraints on startupId in the DB schema currently
+      const existingRecords = await this.db
+        .select({
+          financialsId: startupFinancials.id,
+          tractionId: startupTraction.id,
+          salesMarketingId: startupSalesMarketing.id,
+          operationalId: startupOperational.id,
+          legalId: startupLegal.id,
+          assetsId: startupAssets.id,
+          contactsId: startupContacts.id,
+        })
+        .from(startups)
+        .leftJoin(startupFinancials, eq(startups.id, startupFinancials.startupId))
+        .leftJoin(startupTraction, eq(startups.id, startupTraction.startupId))
+        .leftJoin(startupSalesMarketing, eq(startups.id, startupSalesMarketing.startupId))
+        .leftJoin(startupOperational, eq(startups.id, startupOperational.startupId))
+        .leftJoin(startupLegal, eq(startups.id, startupLegal.startupId))
+        .leftJoin(startupAssets, eq(startups.id, startupAssets.startupId))
+        .leftJoin(startupContacts, eq(startups.id, startupContacts.startupId))
+        .where(eq(startups.id, startupId))
+        .get();
+
+      const batchOps = [];
+
       // Update main startup record if provided
       if (data.startup) {
-        await tx
-          .update(startups)
-          .set(data.startup)
-          .where(eq(startups.id, startupId));
+        batchOps.push(
+          this.db
+            .update(startups)
+            .set(data.startup)
+            .where(eq(startups.id, startupId))
+        );
       }
 
-      // Update related records using upsert pattern
-      if (data.financials) {
-        await tx
-          .insert(startupFinancials)
-          .values({ startupId, ...data.financials })
-          .onConflictDoUpdate({
-            target: startupFinancials.startupId,
-            set: data.financials,
-          });
-      }
+      // Helper to add upsert op
+      const addUpsertOp = (
+        table: any, 
+        inputData: any, 
+        existingId: number | null | undefined
+      ) => {
+        if (!inputData) return;
+        
+        if (existingId) {
+          batchOps.push(
+            this.db.update(table).set(inputData).where(eq(table.id, existingId))
+          );
+        } else {
+          batchOps.push(
+            this.db.insert(table).values({ startupId, ...inputData })
+          );
+        }
+      };
 
-      if (data.traction) {
-        await tx
-          .insert(startupTraction)
-          .values({ startupId, ...data.traction })
-          .onConflictDoUpdate({
-            target: startupTraction.startupId,
-            set: data.traction,
-          });
-      }
+      addUpsertOp(startupFinancials, data.financials, existingRecords?.financialsId);
+      addUpsertOp(startupTraction, data.traction, existingRecords?.tractionId);
+      addUpsertOp(startupSalesMarketing, data.salesMarketing, existingRecords?.salesMarketingId);
+      addUpsertOp(startupOperational, data.operational, existingRecords?.operationalId);
+      addUpsertOp(startupLegal, data.legal, existingRecords?.legalId);
+      addUpsertOp(startupAssets, data.assets, existingRecords?.assetsId);
+      addUpsertOp(startupContacts, data.contacts, existingRecords?.contactsId);
 
-      if (data.salesMarketing) {
-        await tx
-          .insert(startupSalesMarketing)
-          .values({ startupId, ...data.salesMarketing })
-          .onConflictDoUpdate({
-            target: startupSalesMarketing.startupId,
-            set: data.salesMarketing,
-          });
-      }
-
-      if (data.operational) {
-        await tx
-          .insert(startupOperational)
-          .values({ startupId, ...data.operational })
-          .onConflictDoUpdate({
-            target: startupOperational.startupId,
-            set: data.operational,
-          });
-      }
-
-      if (data.legal) {
-        await tx
-          .insert(startupLegal)
-          .values({ startupId, ...data.legal })
-          .onConflictDoUpdate({
-            target: startupLegal.startupId,
-            set: data.legal,
-          });
-      }
-
-      if (data.assets) {
-        await tx
-          .insert(startupAssets)
-          .values({ startupId, ...data.assets })
-          .onConflictDoUpdate({
-            target: startupAssets.startupId,
-            set: data.assets,
-          });
-      }
-
-      if (data.contacts) {
-        await tx
-          .insert(startupContacts)
-          .values({ startupId, ...data.contacts })
-          .onConflictDoUpdate({
-            target: startupContacts.startupId,
-            set: data.contacts,
-          });
+      if (batchOps.length > 0) {
+        await this.db.batch(batchOps as any);
       }
 
       // Return updated startup
-      return await tx
+      return await this.db
         .select()
         .from(startups)
         .where(eq(startups.id, startupId))
         .get();
-    });
+    } catch (error) {
+      throw new DatabaseError('Failed to update startup', error);
+    }
   }
 
   async deleteStartup(startupId: number, userId: number) {
@@ -457,16 +431,34 @@ export class StartupService {
     const startup = await this.db
       .select()
       .from(startups)
-      .where(and(eq(startups.id, startupId), eq(startups.userId, userId)))
+      .where(eq(startups.id, startupId))
       .get();
 
     if (!startup) {
-      throw new Error('Startup not found or access denied');
+      throw new NotFoundError('Startup not found');
     }
 
-    // Delete startup (cascade will handle related records)
-    await this.db
-      .delete(startups)
-      .where(eq(startups.id, startupId));
+    if (startup.userId !== userId) {
+      throw new AuthorizationError('You are not authorized to delete this startup');
+    }
+
+    try {
+      // Delete startup (cascade will handle related records)
+      // Manually delete related records first (simulating cascade)
+      await this.db.batch([
+        this.db.delete(startupFinancials).where(eq(startupFinancials.startupId, startupId)),
+        this.db.delete(startupTraction).where(eq(startupTraction.startupId, startupId)),
+        this.db.delete(startupSalesMarketing).where(eq(startupSalesMarketing.startupId, startupId)),
+        this.db.delete(startupOperational).where(eq(startupOperational.startupId, startupId)),
+        this.db.delete(startupLegal).where(eq(startupLegal.startupId, startupId)),
+        this.db.delete(startupAssets).where(eq(startupAssets.startupId, startupId)),
+        this.db.delete(startupContacts).where(eq(startupContacts.startupId, startupId)),
+        this.db.delete(startupViews).where(eq(startupViews.startupId, startupId)),
+        this.db.delete(favorites).where(eq(favorites.startupId, startupId)),
+        this.db.delete(startups).where(eq(startups.id, startupId))
+      ] as any);
+    } catch (error) {
+      throw new DatabaseError('Failed to delete startup', error);
+    }
   }
 }

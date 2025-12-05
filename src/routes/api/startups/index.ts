@@ -4,6 +4,8 @@ import { createDb } from '@/db';
 import { createServices } from '@/services';
 import { getAuthUser } from '@/lib/auth-middleware';
 import { z } from 'zod';
+import { ValidationError, NotFoundError, AuthorizationError, ConflictError, DatabaseError } from '@/lib/errors';
+import { env } from 'cloudflare:workers';
 
 const createStartupSchema = z.object({
   startup: z.object({
@@ -80,7 +82,7 @@ export const Route = createFileRoute('/api/startups/')({
       GET: async ({ request }) => {
         try {
           const user = await getAuthUser(request);
-          const db = createDb((request as any).env?.DB as D1Database);
+          const db = createDb(env?.DB as D1Database);
           const services = createServices(db);
 
           // Get query parameters for filtering
@@ -113,6 +115,18 @@ export const Route = createFileRoute('/api/startups/')({
           return json(startups);
         } catch (error) {
           console.error('Error fetching startups:', error);
+          if (error instanceof ValidationError) {
+            return json({ error: error.message, details: error.details }, { status: 400 });
+          }
+          if (error instanceof AuthorizationError) {
+            return json({ error: error.message }, { status: 403 });
+          }
+          if (error instanceof NotFoundError) {
+            return json({ error: error.message }, { status: 404 });
+          }
+          if (error instanceof ConflictError) {
+            return json({ error: error.message }, { status: 409 });
+          }
           return json({ error: 'Failed to fetch startups' }, { status: 500 });
         }
       },
@@ -129,7 +143,7 @@ export const Route = createFileRoute('/api/startups/')({
             return json({ error: 'Only startup owners can create startup profiles' }, { status: 403 });
           }
 
-          const db = createDb((request as any).env?.DB as D1Database);
+          const db = createDb(env?.DB as D1Database);
           const services = createServices(db);
 
           const body = await request.json();
@@ -140,8 +154,20 @@ export const Route = createFileRoute('/api/startups/')({
           return json({ startup, message: 'Startup profile created successfully' });
         } catch (error) {
           console.error('Error creating startup:', error);
-          if (error instanceof z.ZodError) {
-            return json({ error: 'Invalid data', details: error.errors }, { status: 400 });
+          if (error instanceof z.ZodError || (error as any).name === 'ZodError' || (error as any).issues) {
+            return json({ error: 'Invalid data', details: (error as any).errors || (error as any).issues }, { status: 400 });
+          }
+          if (error instanceof ValidationError) {
+            return json({ error: error.message, details: error.details }, { status: 400 });
+          }
+          if (error instanceof AuthorizationError) {
+            return json({ error: error.message }, { status: 403 });
+          }
+          if (error instanceof NotFoundError) {
+            return json({ error: error.message }, { status: 404 });
+          }
+          if (error instanceof ConflictError) {
+            return json({ error: error.message }, { status: 409 });
           }
           return json({ error: 'Failed to create startup profile' }, { status: 500 });
         }

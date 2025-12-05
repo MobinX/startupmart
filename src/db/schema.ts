@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, real, unique } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 
 export const users = sqliteTable('users', {
@@ -117,7 +117,9 @@ export const favorites = sqliteTable('favorites', {
   userId: integer('user_id').references(() => users.id).notNull(),
   startupId: integer('startup_id').references(() => startups.id).notNull(),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-});
+}, (t) => ({
+  unq: unique().on(t.userId, t.startupId),
+}));
 
 export const startupViews = sqliteTable('startup_views', {
   id: integer('id').primaryKey(),
