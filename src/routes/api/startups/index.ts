@@ -11,7 +11,7 @@ const createStartupSchema = z.object({
   startup: z.object({
     name: z.string().min(1),
     industry: z.string().min(1),
-    yearFounded: z.number().int().min(1900).max(new Date().getFullYear()),
+    yearFounded: z.number().int().min(1900),
     description: z.string().min(1),
     websiteLink: z.string().url().optional().or(z.literal('')),
     founderBackground: z.string().min(1),
