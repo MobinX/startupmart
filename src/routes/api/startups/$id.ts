@@ -93,7 +93,7 @@ export const Route = createFileRoute('/api/startups/$id')({
           const startup = await services.startup.getStartupById(startupId, user || undefined);
           return json(startup);
         } catch (error) {
-          console.error('Error fetching startup:', error);
+          console.log('Error fetching startup:', error);
           if (error instanceof ValidationError) {
             return json({ error: error.message, details: error.details }, { status: 400 });
           }
@@ -133,7 +133,7 @@ export const Route = createFileRoute('/api/startups/$id')({
 
           return json({ startup: updatedStartup, message: 'Startup profile updated successfully' });
         } catch (error) {
-          console.error('Error updating startup:', error);
+          console.log('Error updating startup:', error);
           if (error instanceof z.ZodError) {
             return json({ error: 'Invalid data', details: error.errors }, { status: 400 });
           }
@@ -173,7 +173,7 @@ export const Route = createFileRoute('/api/startups/$id')({
 
           return json({ message: 'Startup profile deleted successfully' });
         } catch (error) {
-          console.error('Error deleting startup:', error);
+          console.log('Error deleting startup:', error);
           if (error instanceof ValidationError) {
             return json({ error: error.message, details: error.details }, { status: 400 });
           }

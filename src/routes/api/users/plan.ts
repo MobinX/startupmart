@@ -31,7 +31,7 @@ export const Route = createFileRoute('/api/users/plan')({
 
           return json({ user: updatedUser, message: 'Pricing plan updated successfully' });
         } catch (error) {
-          console.error('Error updating pricing plan:', error);
+          console.log('Error updating pricing plan:', error);
           if (error instanceof z.ZodError) {
             return json({ error: 'Invalid data', details: error.errors }, { status: 400 });
           }

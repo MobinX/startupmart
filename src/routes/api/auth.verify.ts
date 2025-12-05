@@ -22,7 +22,7 @@ export const Route = createFileRoute('/api/auth/verify')({
             }
           });
         } catch (error) {
-          console.error('Auth verification error:', error);
+          console.log('Auth verification error:', error);
           return json({ error: 'Authentication failed' }, { status: 500 });
         }
       },

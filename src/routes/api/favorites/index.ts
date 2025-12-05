@@ -29,7 +29,7 @@ export const Route = createFileRoute('/api/favorites/')({
 
           return json(favorites);
         } catch (error) {
-          console.error('Error fetching favorites:', error);
+          console.log('Error fetching favorites:', error);
           if (error instanceof NotFoundError) {
             return json({ error: error.message }, { status: 404 });
           }
@@ -55,7 +55,7 @@ export const Route = createFileRoute('/api/favorites/')({
 
           return json({ message: 'Startup added to favorites' });
         } catch (error) {
-          console.error('Error adding favorite:', error);
+          console.log('Error adding favorite:', error);
           if (error instanceof z.ZodError) {
             return json({ error: 'Invalid data', details: error.errors }, { status: 400 });
           }
@@ -87,7 +87,7 @@ export const Route = createFileRoute('/api/favorites/')({
 
           return json({ message: 'Startup removed from favorites' });
         } catch (error) {
-          console.error('Error removing favorite:', error);
+          console.log('Error removing favorite:', error);
           if (error instanceof z.ZodError) {
             return json({ error: 'Invalid data', details: error.errors }, { status: 400 });
           }

@@ -142,7 +142,7 @@ interface Console {
      */
     dirxml(...data: any[]): void;
     /**
-     * The **`console.error()`** static method outputs a message to the console at the 'error' log level.
+     * The **`console.log()`** static method outputs a message to the console at the 'error' log level.
      *
      * [MDN Reference](https://developer.mozilla.org/docs/Web/API/console/error_static)
      */

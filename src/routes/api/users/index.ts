@@ -35,7 +35,7 @@ export const Route = createFileRoute('/api/users/')({
 
           return json({ ...userProfile, stats });
         } catch (error) {
-          console.error('Error fetching user profile:', error);
+          console.log('Error fetching user profile:', error);
           if (error instanceof NotFoundError) {
             return json({ error: error.message }, { status: 404 });
           }
@@ -61,7 +61,7 @@ export const Route = createFileRoute('/api/users/')({
 
           return json({ user: updatedUser, message: 'Profile updated successfully' });
         } catch (error) {
-          console.error('Error updating user profile:', error);
+          console.log('Error updating user profile:', error);
           if (error instanceof z.ZodError) {
             return json({ error: 'Invalid data', details: error.errors }, { status: 400 });
           }

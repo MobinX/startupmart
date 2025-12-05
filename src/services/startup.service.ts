@@ -254,7 +254,7 @@ export class StartupService {
         userId: user.id,
         startupId,
         createdAt: new Date(),
-      }).catch(err => console.error('Failed to record view', err));
+      }).catch(err => console.log('Failed to record view', err));
     }
 
     // Get view count for owners

@@ -114,7 +114,7 @@ export const Route = createFileRoute('/api/startups/')({
 
           return json(startups);
         } catch (error) {
-          console.error('Error fetching startups:', error);
+          console.log('Error fetching startups:', error);
           if (error instanceof ValidationError) {
             return json({ error: error.message, details: error.details }, { status: 400 });
           }
@@ -153,7 +153,7 @@ export const Route = createFileRoute('/api/startups/')({
 
           return json({ startup, message: 'Startup profile created successfully' });
         } catch (error) {
-          console.error('Error creating startup:', error);
+          console.log('Error creating startup:', error);
           if (error instanceof z.ZodError || (error as any).name === 'ZodError' || (error as any).issues) {
             return json({ error: 'Invalid data', details: (error as any).errors || (error as any).issues }, { status: 400 });
           }

@@ -68,7 +68,7 @@ function LoginPage() {
       // Redirect will happen via useEffect when auth state changes
 
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.log('Login error:', error);
       setError(error.message || 'Login failed');
     } finally {
       setLoading(null);
@@ -80,7 +80,7 @@ function LoginPage() {
       await signOut();
       navigate({ to: '/' });
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.log('Sign out error:', error);
     }
   };
 

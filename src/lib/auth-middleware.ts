@@ -91,7 +91,7 @@ export async function getAuthUser(request: Request): Promise<AuthUser | null> {
       };
     } catch (error) {
       // Token verification failed - user remains null
-      console.error('Auth error:', error);
+      console.log('Auth error:', error);
     }
   }
 
