@@ -163,109 +163,108 @@
       },
       "StartupPost": {
         "type": "object",
-        "required": [
-          "name",
-          "industry",
-          "yearFounded",
-          "description",
-          "founderBackground",
-          "teamSize",
-          "sellEquity",
-          "sellBusiness",
-          "reasonForSelling",
-          "desiredBuyerProfile"
-        ],
+        "required": ["startup"],
         "properties": {
-          "name": { "type": "string", "minLength": 1 },
-          "industry": { "type": "string", "minLength": 1 },
-          "yearFounded": { "type": "integer" },
-          "description": { "type": "string", "minLength": 1 },
-          "websiteLink": { "type": "string", "format": "uri", "nullable": true },
-          "founderBackground": { "type": "string", "minLength": 1 },
-          "teamSize": { "type": "integer", "minimum": 1 },
-          "sellEquity": { "type": "boolean" },
-          "sellBusiness": { "type": "boolean" },
-          "reasonForSelling": { "type": "string", "minLength": 1 },
-          "desiredBuyerProfile": { "type": "string", "minLength": 1 },
-          "askingPrice": { "type": "number", "exclusiveMinimum": 0, "nullable": true },
+          "startup": {
+            "type": "object",
+            "required": [
+              "name",
+              "industry",
+              "yearFounded",
+              "description",
+              "founderBackground",
+              "teamSize",
+              "sellEquity",
+              "sellBusiness",
+              "reasonForSelling",
+              "desiredBuyerProfile"
+            ],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "industry": { "type": "string", "minLength": 1 },
+              "yearFounded": { "type": "integer" },
+              "description": { "type": "string", "minLength": 1 },
+              "websiteLink": { "type": "string", "format": "uri", "nullable": true },
+              "founderBackground": { "type": "string", "minLength": 1 },
+              "teamSize": { "type": "integer", "minimum": 1 },
+              "sellEquity": { "type": "boolean" },
+              "sellBusiness": { "type": "boolean" },
+              "reasonForSelling": { "type": "string", "minLength": 1 },
+              "desiredBuyerProfile": { "type": "string", "minLength": 1 },
+              "askingPrice": { "type": "number", "exclusiveMinimum": 0, "nullable": true }
+            }
+          },
           "financials": {
             "type": "object",
             "properties": {
-              "monthlyRevenue": { "type": "object", "additionalProperties": { "type": "number" }, "nullable": true },
-              "annualRevenue": { "type": "object", "additionalProperties": { "type": "number" }, "nullable": true },
-              "monthlyProfitLoss": { "type": "number", "nullable": true },
-              "grossMargin": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true },
-              "operationalExpense": { "type": "number", "nullable": true },
-              "cashRunway": { "type": "number", "nullable": true },
-              "fundingRaised": { "type": "number", "nullable": true },
-              "valuationExpectation": { "type": "number", "nullable": true }
-            },
-            "nullable": true
+              "monthlyRevenue": { "type": "object", "additionalProperties": { "type": "number" } },
+              "annualRevenue": { "type": "object", "additionalProperties": { "type": "number" } },
+              "monthlyProfitLoss": { "type": "number" },
+              "grossMargin": { "type": "number", "minimum": 0, "maximum": 100 },
+              "operationalExpense": { "type": "number" },
+              "cashRunway": { "type": "number" },
+              "fundingRaised": { "type": "number" },
+              "valuationExpectation": { "type": "number" }
+            }
           },
           "traction": {
             "type": "object",
             "properties": {
-              "totalCustomers": { "type": "integer", "nullable": true },
-              "monthlyActiveCustomers": { "type": "integer", "nullable": true },
-              "customerGrowthYoy": { "type": "number", "nullable": true },
-              "customerRetentionRate": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true },
-              "churnRate": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true },
-              "majorClients": { "type": "string", "nullable": true },
-              "completedOrders": { "type": "integer", "nullable": true }
-            },
-            "nullable": true
+              "totalCustomers": { "type": "integer" },
+              "monthlyActiveCustomers": { "type": "integer" },
+              "customerGrowthYoy": { "type": "number" },
+              "customerRetentionRate": { "type": "number", "minimum": 0, "maximum": 100 },
+              "churnRate": { "type": "number", "minimum": 0, "maximum": 100 },
+              "majorClients": { "type": "string" },
+              "completedOrders": { "type": "integer" }
+            }
           },
           "salesMarketing": {
             "type": "object",
             "properties": {
-              "salesChannels": { "type": "string", "nullable": true },
-              "cac": { "type": "number", "nullable": true },
-              "ltv": { "type": "number", "nullable": true },
-              "marketingPlatforms": { "type": "string", "nullable": true },
-              "conversionRate": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true }
-            },
-            "nullable": true
+              "salesChannels": { "type": "string" },
+              "cac": { "type": "number" },
+              "ltv": { "type": "number" },
+              "marketingPlatforms": { "type": "string" },
+              "conversionRate": { "type": "number", "minimum": 0, "maximum": 100 }
+            }
           },
           "operational": {
             "type": "object",
             "properties": {
-              "supplyChainModel": { "type": "string", "nullable": true },
-              "cogs": { "type": "number", "nullable": true },
-              "averageDeliveryTime": { "type": "string", "nullable": true },
-              "inventoryData": { "type": "string", "nullable": true }
-            },
-            "nullable": true
+              "supplyChainModel": { "type": "string" },
+              "cogs": { "type": "number" },
+              "averageDeliveryTime": { "type": "string" },
+              "inventoryData": { "type": "string" }
+            }
           },
           "legal": {
             "type": "object",
             "properties": {
-              "tradeLicenseNumber": { "type": "string", "nullable": true },
-              "taxId": { "type": "string", "nullable": true },
-              "verifiedPhone": { "type": "string", "nullable": true },
-              "verifiedEmail": { "type": "string", "format": "email", "nullable": true },
-              "ownershipDocumentsLink": { "type": "string", "nullable": true },
-              "ndaFinancialsLink": { "type": "string", "nullable": true }
-            },
-            "nullable": true
+              "tradeLicenseNumber": { "type": "string" },
+              "taxId": { "type": "string" },
+              "verifiedPhone": { "type": "string" },
+              "verifiedEmail": { "type": "string", "format": "email" },
+              "ownershipDocumentsLink": { "type": "string" },
+              "ndaFinancialsLink": { "type": "string" }
+            }
           },
           "assets": {
             "type": "object",
             "properties": {
-              "domainOwnership": { "type": "string", "nullable": true },
-              "patentsOrCopyrights": { "type": "string", "nullable": true },
-              "sourceCodeLink": { "type": "string", "nullable": true },
-              "softwareInfrastructure": { "type": "string", "nullable": true },
-              "socialMediaHandles": { "type": "string", "nullable": true }
-            },
-            "nullable": true
+              "domainOwnership": { "type": "string" },
+              "patentsOrCopyrights": { "type": "string" },
+              "sourceCodeLink": { "type": "string" },
+              "softwareInfrastructure": { "type": "string" },
+              "socialMediaHandles": { "type": "string" }
+            }
           },
           "contacts": {
             "type": "object",
             "properties": {
-              "contactEmail": { "type": "string", "format": "email", "nullable": true },
-              "contactPhone": { "type": "string", "nullable": true }
-            },
-            "nullable": true
+              "contactEmail": { "type": "string", "format": "email" },
+              "contactPhone": { "type": "string" }
+            }
           }
         }
       },
