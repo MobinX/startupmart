@@ -13,11 +13,11 @@
     {
       "url": "http://localhost:3000/",
       "description": "Development server"
-    },{
+    },
+    {
       "url": "http://192.168.0.212:3000/",
       "description": "Development2 server"
     }
-    
   ],
   "components": {
     "securitySchemes": {
@@ -161,14 +161,122 @@
           }
         ]
       },
+      "StartupPost": {
+        "type": "object",
+        "required": [
+          "name",
+          "industry",
+          "yearFounded",
+          "description",
+          "founderBackground",
+          "teamSize",
+          "sellEquity",
+          "sellBusiness",
+          "reasonForSelling",
+          "desiredBuyerProfile"
+        ],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "industry": { "type": "string", "minLength": 1 },
+          "yearFounded": { "type": "integer" },
+          "description": { "type": "string", "minLength": 1 },
+          "websiteLink": { "type": "string", "format": "uri", "nullable": true },
+          "founderBackground": { "type": "string", "minLength": 1 },
+          "teamSize": { "type": "integer", "minimum": 1 },
+          "sellEquity": { "type": "boolean" },
+          "sellBusiness": { "type": "boolean" },
+          "reasonForSelling": { "type": "string", "minLength": 1 },
+          "desiredBuyerProfile": { "type": "string", "minLength": 1 },
+          "askingPrice": { "type": "number", "exclusiveMinimum": 0, "nullable": true },
+          "financials": {
+            "type": "object",
+            "properties": {
+              "monthlyRevenue": { "type": "object", "additionalProperties": { "type": "number" }, "nullable": true },
+              "annualRevenue": { "type": "object", "additionalProperties": { "type": "number" }, "nullable": true },
+              "monthlyProfitLoss": { "type": "number", "nullable": true },
+              "grossMargin": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true },
+              "operationalExpense": { "type": "number", "nullable": true },
+              "cashRunway": { "type": "number", "nullable": true },
+              "fundingRaised": { "type": "number", "nullable": true },
+              "valuationExpectation": { "type": "number", "nullable": true }
+            },
+            "nullable": true
+          },
+          "traction": {
+            "type": "object",
+            "properties": {
+              "totalCustomers": { "type": "integer", "nullable": true },
+              "monthlyActiveCustomers": { "type": "integer", "nullable": true },
+              "customerGrowthYoy": { "type": "number", "nullable": true },
+              "customerRetentionRate": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true },
+              "churnRate": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true },
+              "majorClients": { "type": "string", "nullable": true },
+              "completedOrders": { "type": "integer", "nullable": true }
+            },
+            "nullable": true
+          },
+          "salesMarketing": {
+            "type": "object",
+            "properties": {
+              "salesChannels": { "type": "string", "nullable": true },
+              "cac": { "type": "number", "nullable": true },
+              "ltv": { "type": "number", "nullable": true },
+              "marketingPlatforms": { "type": "string", "nullable": true },
+              "conversionRate": { "type": "number", "minimum": 0, "maximum": 100, "nullable": true }
+            },
+            "nullable": true
+          },
+          "operational": {
+            "type": "object",
+            "properties": {
+              "supplyChainModel": { "type": "string", "nullable": true },
+              "cogs": { "type": "number", "nullable": true },
+              "averageDeliveryTime": { "type": "string", "nullable": true },
+              "inventoryData": { "type": "string", "nullable": true }
+            },
+            "nullable": true
+          },
+          "legal": {
+            "type": "object",
+            "properties": {
+              "tradeLicenseNumber": { "type": "string", "nullable": true },
+              "taxId": { "type": "string", "nullable": true },
+              "verifiedPhone": { "type": "string", "nullable": true },
+              "verifiedEmail": { "type": "string", "format": "email", "nullable": true },
+              "ownershipDocumentsLink": { "type": "string", "nullable": true },
+              "ndaFinancialsLink": { "type": "string", "nullable": true }
+            },
+            "nullable": true
+          },
+          "assets": {
+            "type": "object",
+            "properties": {
+              "domainOwnership": { "type": "string", "nullable": true },
+              "patentsOrCopyrights": { "type": "string", "nullable": true },
+              "sourceCodeLink": { "type": "string", "nullable": true },
+              "softwareInfrastructure": { "type": "string", "nullable": true },
+              "socialMediaHandles": { "type": "string", "nullable": true }
+            },
+            "nullable": true
+          },
+          "contacts": {
+            "type": "object",
+            "properties": {
+              "contactEmail": { "type": "string", "format": "email", "nullable": true },
+              "contactPhone": { "type": "string", "nullable": true }
+            },
+            "nullable": true
+          }
+        }
+      },
       "Plan": {
         "type": "object",
         "properties": {
           "id": { "type": "integer" },
           "name": { "type": "string" },
           "planFor": { "type": "string", "enum": ["investor", "startup_owner"] },
-          "allowedFields": { 
-            "type": "array", 
+          "allowedFields": {
+            "type": "array",
             "items": { "type": "string" },
             "description": "List of fields or sections this plan grants access to (e.g., 'financials', 'startupRevenue')"
           },
@@ -435,7 +543,7 @@
           "required": true,
           "content": {
             "application/json": {
-              "schema": { "$ref": "#/components/schemas/StartupDetails" }
+              "schema": { "$ref": "#/components/schemas/StartupPost" }
             }
           }
         },
@@ -506,8 +614,8 @@
                   "type": "object",
                   "properties": {
                     "startup": { "$ref": "#/components/schemas/StartupDetails" },
-                    "allowedFields": { 
-                      "type": "array", 
+                    "allowedFields": {
+                      "type": "array",
                       "items": { "type": "string" },
                       "description": "List of fields the user is allowed to see"
                     }
