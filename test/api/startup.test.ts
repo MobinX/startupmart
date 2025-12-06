@@ -11,7 +11,7 @@ describe('Startup Service API', () => {
       body: JSON.stringify(startupData),
     }, TEST_TOKEN_OWNER);
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(201);
     expect((data as any).startup).toBeDefined();
     expect((data as any).startup.name).toBe(startupData.startup.name);
     createdStartupId = (data as any).startup.id;
@@ -29,6 +29,9 @@ describe('Startup Service API', () => {
   });
 
   it('should fail to create startup with invalid data', async () => {
+    // Small delay to avoid race conditions with the server
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
     const invalidData = { startup: { name: '' } }; // Missing required fields
     const { response, data } = await fetchApi('/startups', {
       method: 'POST',
@@ -43,9 +46,9 @@ describe('Startup Service API', () => {
     const { response, data } = await fetchApi(`/startups/${createdStartupId}`, {}, TEST_TOKEN_OWNER);
 
     expect(response.status).toBe(200);
-    expect((data as any).id).toBe(createdStartupId);
-    expect((data as any).financials).toBeDefined(); // Owner sees everything
-    expect((data as any).viewCount).toBeDefined();
+    expect((data as any).startup.id).toBe(createdStartupId);
+    expect((data as any).startup.financials).toBeDefined(); // Owner sees everything
+    expect((data as any).startup.viewCount).toBeDefined();
   });
 
   it('should get the created startup details (Premium Investor)', async () => {
@@ -79,8 +82,8 @@ describe('Startup Service API', () => {
     const { response, data } = await fetchApi(`/startups/${createdStartupId}`, {}, TEST_TOKEN_OWNER);
 
     expect(response.status).toBe(200);
-    expect((data as any).name).toBe('Updated Startup Name');
-    expect((data as any).financials.monthlyProfitLoss).toBe(5000);
+    expect((data as any).startup.name).toBe('Updated Startup Name');
+    expect((data as any).startup.financials.monthlyProfitLoss).toBe(5000);
   });
 
   it('should fail update with unauthorized user', async () => {

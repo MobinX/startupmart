@@ -13,86 +13,89 @@ import {
   favorites,
 } from '@/db/schema';
 import { AuthUser } from '@/lib/auth-middleware';
-import { ValidationError, NotFoundError, AuthorizationError, DatabaseError } from '@/lib/errors';
+import { z } from 'zod';
 
-export interface CreateStartupInput {
-  startup: {
-    name: string;
-    industry: string;
-    yearFounded: number;
-    description: string;
-    websiteLink?: string;
-    founderBackground: string;
-    teamSize: number;
-    sellEquity: boolean;
-    sellBusiness: boolean;
-    reasonForSelling: string;
-    desiredBuyerProfile: string;
-    askingPrice?: number;
-  };
-  financials?: {
-    monthlyRevenue?: Record<string, number>;
-    annualRevenue?: Record<string, number>;
-    monthlyProfitLoss?: number;
-    grossMargin?: number;
-    operationalExpense?: number;
-    cashRunway?: number;
-    fundingRaised?: number;
-    valuationExpectation?: number;
-  };
-  traction?: {
-    totalCustomers?: number;
-    monthlyActiveCustomers?: number;
-    customerGrowthYoy?: number;
-    customerRetentionRate?: number;
-    churnRate?: number;
-    majorClients?: string;
-    completedOrders?: number;
-  };
-  salesMarketing?: {
-    salesChannels?: string;
-    cac?: number;
-    ltv?: number;
-    marketingPlatforms?: string;
-    conversionRate?: number;
-  };
-  operational?: {
-    supplyChainModel?: string;
-    cogs?: number;
-    averageDeliveryTime?: string;
-    inventoryData?: string;
-  };
-  legal?: {
-    tradeLicenseNumber?: string;
-    taxId?: string;
-    verifiedPhone?: string;
-    verifiedEmail?: string;
-    ownershipDocumentsLink?: string;
-    ndaFinancialsLink?: string;
-  };
-  assets?: {
-    domainOwnership?: string;
-    patentsOrCopyrights?: string;
-    sourceCodeLink?: string;
-    softwareInfrastructure?: string;
-    socialMediaHandles?: string;
-  };
-  contacts?: {
-    contactEmail?: string;
-    contactPhone?: string;
-  };
-}
+export const createStartupSchema = z.object({
+  startup: z.object({
+    name: z.string().min(1),
+    industry: z.string().min(1),
+    yearFounded: z.number().int().min(1900).max(new Date().getFullYear()),
+    description: z.string().min(1),
+    websiteLink: z.string().url().optional().or(z.literal('')),
+    founderBackground: z.string().min(1),
+    teamSize: z.number().int().min(1),
+    sellEquity: z.boolean(),
+    sellBusiness: z.boolean(),
+    reasonForSelling: z.string().min(1),
+    desiredBuyerProfile: z.string().min(1),
+    askingPrice: z.number().positive().optional(),
+  }),
+  financials: z.object({
+    monthlyRevenue: z.record(z.string(), z.number()).optional(),
+    annualRevenue: z.record(z.string(), z.number()).optional(),
+    monthlyProfitLoss: z.number().optional(),
+    grossMargin: z.number().min(0).max(100).optional(),
+    operationalExpense: z.number().optional(),
+    cashRunway: z.number().optional(),
+    fundingRaised: z.number().optional(),
+    valuationExpectation: z.number().optional(),
+  }).optional(),
+  traction: z.object({
+    totalCustomers: z.number().int().optional(),
+    monthlyActiveCustomers: z.number().int().optional(),
+    customerGrowthYoy: z.number().optional(),
+    customerRetentionRate: z.number().min(0).max(100).optional(),
+    churnRate: z.number().min(0).max(100).optional(),
+    majorClients: z.string().optional(),
+    completedOrders: z.number().int().optional(),
+  }).optional(),
+  salesMarketing: z.object({
+    salesChannels: z.string().optional(),
+    cac: z.number().optional(),
+    ltv: z.number().optional(),
+    marketingPlatforms: z.string().optional(),
+    conversionRate: z.number().min(0).max(100).optional(),
+  }).optional(),
+  operational: z.object({
+    supplyChainModel: z.string().optional(),
+    cogs: z.number().optional(),
+    averageDeliveryTime: z.string().optional(),
+    inventoryData: z.string().optional(),
+  }).optional(),
+  legal: z.object({
+    tradeLicenseNumber: z.string().optional(),
+    taxId: z.string().optional(),
+    verifiedPhone: z.string().optional(),
+    verifiedEmail: z.string().email().optional(),
+    ownershipDocumentsLink: z.string().optional(),
+    ndaFinancialsLink: z.string().optional(),
+  }).optional(),
+  assets: z.object({
+    domainOwnership: z.string().optional(),
+    patentsOrCopyrights: z.string().optional(),
+    sourceCodeLink: z.string().optional(),
+    softwareInfrastructure: z.string().optional(),
+    socialMediaHandles: z.string().optional(),
+  }).optional(),
+  contacts: z.object({
+    contactEmail: z.string().email().optional(),
+    contactPhone: z.string().optional(),
+  }).optional(),
+});
 
-export interface UpdateStartupInput {
-  startup?: Partial<CreateStartupInput['startup']>;
-  financials?: CreateStartupInput['financials'];
-  traction?: CreateStartupInput['traction'];
-  salesMarketing?: CreateStartupInput['salesMarketing'];
-  operational?: CreateStartupInput['operational'];
-  legal?: CreateStartupInput['legal'];
-  assets?: CreateStartupInput['assets'];
-  contacts?: CreateStartupInput['contacts'];
-}
+export const updateStartupSchema = z.object({
+  startup: createStartupSchema.shape.startup.partial().optional(),
+  financials: createStartupSchema.shape.financials.optional(),
+  traction: createStartupSchema.shape.traction.optional(),
+  salesMarketing: createStartupSchema.shape.salesMarketing.optional(),
+  operational: createStartupSchema.shape.operational.optional(),
+  legal: createStartupSchema.shape.legal.optional(),
+  assets: createStartupSchema.shape.assets.optional(),
+  contacts: createStartupSchema.shape.contacts.optional(),
+});
+
+export type CreateStartupInput = z.infer<typeof createStartupSchema>;
+export type UpdateStartupInput = z.infer<typeof updateStartupSchema>;
 
 export interface StartupFilters {
   industry?: string;
@@ -133,13 +136,16 @@ export interface StartupDetails extends StartupSummary {
 export class StartupService {
   constructor(private db: Database) {}
 
-  async createStartup(userId: number, data: CreateStartupInput) {
-    // Verify user role
-    if (!data.startup) {
-      throw new ValidationError('Startup data is required');
-    }
-
+  async createStartup(userId: number, rawData: unknown) {
     try {
+      const validation = createStartupSchema.safeParse(rawData);
+      
+      if (!validation.success) {
+        return { error: 'Invalid startup data', details: validation.error.errors, status: 400 };
+      }
+      
+      const data = validation.data;
+
       // D1 does not support interactive transactions with return values in the middle.
       // We must insert the startup first to get the ID, then batch insert the rest.
       
@@ -212,143 +218,167 @@ export class StartupService {
         await this.db.batch(batchOps as any);
       }
 
-      return startup;
+      return { startup, message: 'Startup created successfully', status: 201 };
     } catch (error) {
-      throw new DatabaseError('Failed to create startup', error);
+      console.error('Failed to create startup:', error);
+      return { error: 'Failed to create startup', status: 500 };
     }
   }
 
-  async getStartupById(startupId: number, user?: AuthUser): Promise<StartupDetails> {
-    // Fetch all data in a single query using left joins
-    const rows = await this.db
-      .select()
-      .from(startups)
-      .leftJoin(startupFinancials, eq(startups.id, startupFinancials.startupId))
-      .leftJoin(startupTraction, eq(startups.id, startupTraction.startupId))
-      .leftJoin(startupSalesMarketing, eq(startups.id, startupSalesMarketing.startupId))
-      .leftJoin(startupOperational, eq(startups.id, startupOperational.startupId))
-      .leftJoin(startupLegal, eq(startups.id, startupLegal.startupId))
-      .leftJoin(startupAssets, eq(startups.id, startupAssets.startupId))
-      .leftJoin(startupContacts, eq(startups.id, startupContacts.startupId))
-      .where(eq(startups.id, startupId));
-
-    if (rows.length === 0) {
-      throw new NotFoundError('Startup not found');
-    }
-
-    const row = rows[0];
-    const startup = row.startups;
-
-    // Check authorization
-    const isOwner = user?.id === startup.userId;
-    const isPremium = user?.currentPricingPlan === 'premium';
-
-    if (!isOwner && !isPremium) {
-      throw new AuthorizationError('Premium subscription required to view startup details');
-    }
-
-    // Record view for analytics (only for non-owners)
-    if (user && !isOwner) {
-      // Fire and forget view recording to not block response
-      this.db.insert(startupViews).values({
-        userId: user.id,
-        startupId,
-        createdAt: new Date(),
-      }).catch(err => console.log('Failed to record view', err));
-    }
-
-    // Get view count for owners
-    let viewCount: number | undefined;
-    if (isOwner) {
-      const views = await this.db
-        .select({ count: sql<number>`count(*)` })
-        .from(startupViews)
-        .where(eq(startupViews.startupId, startupId));
-      
-      viewCount = views[0]?.count || 0;
-    }
-
-    return {
-      ...startup,
-      financials: row.startup_financials || null,
-      traction: row.startup_traction || null,
-      salesMarketing: row.startup_sales_marketing || null,
-      operational: row.startup_operational || null,
-      legal: row.startup_legal || null,
-      assets: row.startup_assets || null,
-      contacts: row.startup_contacts || null,
-      viewCount,
-    };
-  }
-
-  async getPublicStartups(filters: StartupFilters = {}): Promise<StartupSummary[]> {
-    const conditions = [];
-
-    // Build where conditions array
-    if (filters.industry) {
-      conditions.push(eq(startups.industry, filters.industry));
-    }
-
-    if (filters.minTeamSize !== undefined) {
-      conditions.push(sql`${startups.teamSize} >= ${filters.minTeamSize}`);
-    }
-
-    if (filters.maxTeamSize !== undefined) {
-      conditions.push(sql`${startups.teamSize} <= ${filters.maxTeamSize}`);
-    }
-
-    if (filters.sellEquity !== undefined) {
-      conditions.push(eq(startups.sellEquity, filters.sellEquity));
-    }
-
-    if (filters.sellBusiness !== undefined) {
-      conditions.push(eq(startups.sellBusiness, filters.sellBusiness));
-    }
-
-    const query = this.db
-      .select({
-        id: startups.id,
-        name: startups.name,
-        industry: startups.industry,
-        yearFounded: startups.yearFounded,
-        description: startups.description,
-        websiteLink: startups.websiteLink,
-        founderBackground: startups.founderBackground,
-        teamSize: startups.teamSize,
-        sellEquity: startups.sellEquity,
-        sellBusiness: startups.sellBusiness,
-        reasonForSelling: startups.reasonForSelling,
-        desiredBuyerProfile: startups.desiredBuyerProfile,
-        askingPrice: startups.askingPrice,
-        createdAt: startups.createdAt,
-      })
-      .from(startups);
-
-    // Apply all conditions at once if any exist
-    if (conditions.length > 0) {
-      return await query.where(and(...conditions));
-    }
-
-    return await query;
-  }
-
-  async updateStartup(startupId: number, userId: number, data: UpdateStartupInput) {
-    // Verify ownership - optimize to select only userId
-    const existingStartup = await this.db
-      .select({ userId: startups.userId })
-      .from(startups)
-      .where(eq(startups.id, startupId))
-      .get();
-
-    if (!existingStartup) {
-      throw new NotFoundError('Startup not found');
-    }
-
-    if (existingStartup.userId !== userId) {
-      throw new AuthorizationError('You are not authorized to update this startup');
-    }
-
+  async getStartupById(startupId: number, user?: AuthUser) {
     try {
+      // Fetch all data in a single query using left joins
+      const rows = await this.db
+        .select()
+        .from(startups)
+        .leftJoin(startupFinancials, eq(startups.id, startupFinancials.startupId))
+        .leftJoin(startupTraction, eq(startups.id, startupTraction.startupId))
+        .leftJoin(startupSalesMarketing, eq(startups.id, startupSalesMarketing.startupId))
+        .leftJoin(startupOperational, eq(startups.id, startupOperational.startupId))
+        .leftJoin(startupLegal, eq(startups.id, startupLegal.startupId))
+        .leftJoin(startupAssets, eq(startups.id, startupAssets.startupId))
+        .leftJoin(startupContacts, eq(startups.id, startupContacts.startupId))
+        .where(eq(startups.id, startupId));
+
+      if (rows.length === 0) {
+        return { error: 'Startup not found', status: 404 };
+      }
+
+      const row = rows[0];
+      const startup = row.startups;
+
+      // Check authorization
+      const isOwner = user?.id === startup.userId;
+      const isPremium = user?.currentPricingPlan === 'premium';
+
+      if (!isOwner && !isPremium) {
+        return { error: 'Premium subscription required to view startup details', status: 403 };
+      }
+
+      // Record view for analytics (only for non-owners)
+      if (user && !isOwner) {
+        // Fire and forget view recording to not block response
+        this.db.insert(startupViews).values({
+          userId: user.id,
+          startupId,
+          createdAt: new Date(),
+        }).catch(err => console.log('Failed to record view', err));
+      }
+
+      // Get view count for owners
+      let viewCount: number | undefined;
+      if (isOwner) {
+        const views = await this.db
+          .select({ count: sql<number>`count(*)` })
+          .from(startupViews)
+          .where(eq(startupViews.startupId, startupId));
+        
+        viewCount = views[0]?.count || 0;
+      }
+
+      const startupDetails: StartupDetails = {
+        ...startup,
+        financials: row.startup_financials || null,
+        traction: row.startup_traction || null,
+        salesMarketing: row.startup_sales_marketing || null,
+        operational: row.startup_operational || null,
+        legal: row.startup_legal || null,
+        assets: row.startup_assets || null,
+        contacts: row.startup_contacts || null,
+        viewCount,
+      };
+
+      return { startup: startupDetails, status: 200 };
+    } catch (error) {
+      console.error('Failed to fetch startup:', error);
+      return { error: 'Failed to fetch startup', status: 500 };
+    }
+  }
+
+  async getPublicStartups(filters: StartupFilters = {}) {
+    try {
+      const conditions = [];
+
+      // Build where conditions array
+      if (filters.industry) {
+        conditions.push(eq(startups.industry, filters.industry));
+      }
+
+      if (filters.minTeamSize !== undefined) {
+        conditions.push(sql`${startups.teamSize} >= ${filters.minTeamSize}`);
+      }
+
+      if (filters.maxTeamSize !== undefined) {
+        conditions.push(sql`${startups.teamSize} <= ${filters.maxTeamSize}`);
+      }
+
+      if (filters.sellEquity !== undefined) {
+        conditions.push(eq(startups.sellEquity, filters.sellEquity));
+      }
+
+      if (filters.sellBusiness !== undefined) {
+        conditions.push(eq(startups.sellBusiness, filters.sellBusiness));
+      }
+
+      const query = this.db
+        .select({
+          id: startups.id,
+          name: startups.name,
+          industry: startups.industry,
+          yearFounded: startups.yearFounded,
+          description: startups.description,
+          websiteLink: startups.websiteLink,
+          founderBackground: startups.founderBackground,
+          teamSize: startups.teamSize,
+          sellEquity: startups.sellEquity,
+          sellBusiness: startups.sellBusiness,
+          reasonForSelling: startups.reasonForSelling,
+          desiredBuyerProfile: startups.desiredBuyerProfile,
+          askingPrice: startups.askingPrice,
+          createdAt: startups.createdAt,
+        })
+        .from(startups);
+
+      // Apply all conditions at once if any exist
+      let result;
+      if (conditions.length > 0) {
+        result = await query.where(and(...conditions));
+      } else {
+        result = await query;
+      }
+
+      return { startups: result, status: 200 };
+    } catch (error) {
+      console.error('Failed to fetch startups:', error);
+      return { error: 'Failed to fetch startups', status: 500 };
+    }
+  }
+
+  async updateStartup(startupId: number, userId: number, rawData: unknown) {
+    try {
+      const validation = updateStartupSchema.safeParse(rawData);
+      
+      if (!validation.success) {
+        return { error: 'Invalid startup data', details: validation.error.errors, status: 400 };
+      }
+      
+      const data = validation.data;
+
+      // Verify ownership - optimize to select only userId
+      const existingStartup = await this.db
+        .select({ userId: startups.userId })
+        .from(startups)
+        .where(eq(startups.id, startupId))
+        .get();
+
+      if (!existingStartup) {
+        return { error: 'Startup not found', status: 404 };
+      }
+
+      if (existingStartup.userId !== userId) {
+        return { error: 'You are not authorized to update this startup', status: 403 };
+      }
+
       // Check existence of related records to decide between UPDATE and INSERT
       // We can't use onConflictDoUpdate because there are no unique constraints on startupId in the DB schema currently
       const existingRecords = await this.db
@@ -416,33 +446,36 @@ export class StartupService {
       }
 
       // Return updated startup
-      return await this.db
+      const updatedStartup = await this.db
         .select()
         .from(startups)
         .where(eq(startups.id, startupId))
         .get();
+
+      return { startup: updatedStartup, message: 'Startup updated successfully', status: 200 };
     } catch (error) {
-      throw new DatabaseError('Failed to update startup', error);
+      console.error('Failed to update startup:', error);
+      return { error: 'Failed to update startup', status: 500 };
     }
   }
 
   async deleteStartup(startupId: number, userId: number) {
-    // Verify ownership
-    const startup = await this.db
-      .select()
-      .from(startups)
-      .where(eq(startups.id, startupId))
-      .get();
-
-    if (!startup) {
-      throw new NotFoundError('Startup not found');
-    }
-
-    if (startup.userId !== userId) {
-      throw new AuthorizationError('You are not authorized to delete this startup');
-    }
-
     try {
+      // Verify ownership
+      const startup = await this.db
+        .select()
+        .from(startups)
+        .where(eq(startups.id, startupId))
+        .get();
+
+      if (!startup) {
+        return { error: 'Startup not found', status: 404 };
+      }
+
+      if (startup.userId !== userId) {
+        return { error: 'You are not authorized to delete this startup', status: 403 };
+      }
+
       // Delete startup (cascade will handle related records)
       // Manually delete related records first (simulating cascade)
       await this.db.batch([
@@ -457,8 +490,11 @@ export class StartupService {
         this.db.delete(favorites).where(eq(favorites.startupId, startupId)),
         this.db.delete(startups).where(eq(startups.id, startupId))
       ] as any);
+
+      return { message: 'Startup deleted successfully', status: 200 };
     } catch (error) {
-      throw new DatabaseError('Failed to delete startup', error);
+      console.error('Failed to delete startup:', error);
+      return { error: 'Failed to delete startup', status: 500 };
     }
   }
 }

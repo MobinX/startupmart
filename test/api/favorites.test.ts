@@ -31,8 +31,8 @@ describe('Favorites Service API', () => {
       body: JSON.stringify({ startupId }),
     }, TEST_TOKEN_INVESTOR);
 
-    expect(response.status).toBe(200);
-    expect((data as any).message).toBe('Startup added to favorites');
+    expect(response.status).toBe(201);
+    expect((data as any).message).toBe('Added to favorites');
   });
 
   it('should fail to add duplicate favorite', async () => {
@@ -49,8 +49,8 @@ describe('Favorites Service API', () => {
     const { response, data } = await fetchApi('/favorites', {}, TEST_TOKEN_INVESTOR);
 
     expect(response.status).toBe(200);
-    expect(Array.isArray(data)).toBe(true);
-    const favorites = data as any[];
+    expect(Array.isArray((data as any).favorites)).toBe(true);
+    const favorites = (data as any).favorites as any[];
     const favorite = favorites.find((f: any) => f.id === startupId);
     expect(favorite).toBeDefined();
     expect(favorite.name).toBeDefined();
@@ -63,7 +63,7 @@ describe('Favorites Service API', () => {
     }, TEST_TOKEN_INVESTOR);
 
     expect(response.status).toBe(200);
-    expect((data as any).message).toBe('Startup removed from favorites');
+    expect((data as any).message).toBe('Removed from favorites');
   });
 
   it('should fail to remove non-existent favorite', async () => {
