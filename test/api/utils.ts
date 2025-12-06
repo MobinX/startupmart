@@ -1,5 +1,5 @@
-export const BASE_URL = 'http://localhost:3000/api';
-
+// export const BASE_URL = 'http://localhost:3000/api';
+export const BASE_URL = '/api';
 export const TEST_TOKEN_OWNER = 'TEST_TOKEN_OWNER';
 export const TEST_TOKEN_INVESTOR = 'TEST_TOKEN_INVESTOR';
 
@@ -71,6 +71,37 @@ export function generateRandomStartup() {
       contactEmail: `contact@startup${timestamp}.com`,
       contactPhone: '+1234567890',
     },
+  };
+}
+
+export function generateRandomPlan(planFor: 'investor' | 'startup_owner' = 'investor') {
+  const timestamp = Date.now();
+  return {
+    name: `Test Plan ${timestamp}`,
+    planFor,
+    allowedFields: ['startup', 'financials', 'traction'],
+    price: 99.99,
+    description: `A test plan for ${planFor}s`,
+  };
+}
+
+export function generateFullAccessPlan(planFor: 'investor' | 'startup_owner' = 'investor') {
+  const timestamp = Date.now();
+  return {
+    name: `Full Access Plan ${timestamp}`,
+    planFor,
+    allowedFields: [
+      'startup',
+      'financials',
+      'traction',
+      'salesMarketing',
+      'operational',
+      'legal',
+      'assets',
+      'contacts',
+    ],
+    price: 299.99,
+    description: `Full access plan for ${planFor}s`,
   };
 }
 

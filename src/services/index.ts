@@ -2,6 +2,7 @@ import { Database } from '../db';
 import { UserService } from './user.service';
 import { StartupService } from './startup.service';
 import { FavoritesService } from './favorites.service';
+import { PlanService } from './plan.service';
 
 // Service factory function
 export function createServices(db: Database) {
@@ -9,6 +10,7 @@ export function createServices(db: Database) {
     user: new UserService(db),
     startup: new StartupService(db),
     favorites: new FavoritesService(db),
+    plan: new PlanService(db),
   };
 }
 
@@ -17,6 +19,7 @@ export type Services = ReturnType<typeof createServices>;
 export { UserService } from './user.service';
 export { StartupService } from './startup.service';
 export { FavoritesService } from './favorites.service';
+export { PlanService } from './plan.service';
 
 // Re-export types
 export type {
@@ -32,3 +35,9 @@ export type {
   StartupSummary,
   StartupDetails,
 } from './startup.service';
+
+export type {
+  CreatePlanInput,
+  UpdatePlanInput,
+  PlanWithSubscription,
+} from './plan.service';

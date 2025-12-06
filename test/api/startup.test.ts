@@ -51,16 +51,14 @@ describe('Startup Service API', () => {
     expect((data as any).startup.viewCount).toBeDefined();
   });
 
-  it('should get the created startup details (Premium Investor)', async () => {
-    // Note: TEST_TOKEN_OWNER is premium, but let's assume TEST_TOKEN_INVESTOR is free for now based on auth-middleware
-    // Wait, in auth-middleware: owner is premium, investor is free.
-    // So investor should NOT see full details unless premium.
-    // Let's check free investor access.
-    const { response } = await fetchApi(`/startups/${createdStartupId}`, {}, TEST_TOKEN_INVESTOR);
+  it('should get the created startup details (Investor without plan)', async () => {
+    // Investor without an active plan should NOT see full details
+    // Should get 403 for full details endpoint if not owner and no plan
+    const { response, data } = await fetchApi(`/startups/${createdStartupId}`, {}, TEST_TOKEN_INVESTOR);
 
-    // Free investor should get 403 for full details endpoint if not owner
-    // Wait, getStartupById throws AuthorizationError if not owner and not premium.
+    // Investor without active plan should get 403
     expect(response.status).toBe(403);
+    expect((data as any).error).toContain('plan');
   });
 
   it('should update the startup', async () => {

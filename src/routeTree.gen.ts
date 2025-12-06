@@ -13,12 +13,15 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUsersIndexRouteImport } from './routes/api/users/index'
 import { Route as ApiStartupsIndexRouteImport } from './routes/api/startups/index'
+import { Route as ApiPlansIndexRouteImport } from './routes/api/plans/index'
 import { Route as ApiFavoritesIndexRouteImport } from './routes/api/favorites/index'
 import { Route as DemoStartServerFuncsRouteImport } from './routes/demo/start.server-funcs'
 import { Route as DemoStartApiRequestRouteImport } from './routes/demo/start.api-request'
 import { Route as DemoApiNamesRouteImport } from './routes/demo/api.names'
 import { Route as ApiUsersPlanRouteImport } from './routes/api/users/plan'
 import { Route as ApiStartupsIdRouteImport } from './routes/api/startups/$id'
+import { Route as ApiPlansSubscribeRouteImport } from './routes/api/plans/subscribe'
+import { Route as ApiPlansIdRouteImport } from './routes/api/plans/$id'
 import { Route as ApiAuthVerifyRouteImport } from './routes/api/auth.verify'
 import { Route as DemoStartSsrIndexRouteImport } from './routes/demo/start.ssr.index'
 import { Route as DemoStartSsrSpaModeRouteImport } from './routes/demo/start.ssr.spa-mode'
@@ -43,6 +46,11 @@ const ApiUsersIndexRoute = ApiUsersIndexRouteImport.update({
 const ApiStartupsIndexRoute = ApiStartupsIndexRouteImport.update({
   id: '/api/startups/',
   path: '/api/startups/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlansIndexRoute = ApiPlansIndexRouteImport.update({
+  id: '/api/plans/',
+  path: '/api/plans/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFavoritesIndexRoute = ApiFavoritesIndexRouteImport.update({
@@ -75,6 +83,16 @@ const ApiStartupsIdRoute = ApiStartupsIdRouteImport.update({
   path: '/api/startups/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPlansSubscribeRoute = ApiPlansSubscribeRouteImport.update({
+  id: '/api/plans/subscribe',
+  path: '/api/plans/subscribe',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlansIdRoute = ApiPlansIdRouteImport.update({
+  id: '/api/plans/$id',
+  path: '/api/plans/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthVerifyRoute = ApiAuthVerifyRouteImport.update({
   id: '/api/auth/verify',
   path: '/api/auth/verify',
@@ -105,12 +123,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/api/auth/verify': typeof ApiAuthVerifyRoute
+  '/api/plans/$id': typeof ApiPlansIdRoute
+  '/api/plans/subscribe': typeof ApiPlansSubscribeRoute
   '/api/startups/$id': typeof ApiStartupsIdRoute
   '/api/users/plan': typeof ApiUsersPlanRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/api/favorites': typeof ApiFavoritesIndexRoute
+  '/api/plans': typeof ApiPlansIndexRoute
   '/api/startups': typeof ApiStartupsIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
@@ -122,12 +143,15 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/api/auth/verify': typeof ApiAuthVerifyRoute
+  '/api/plans/$id': typeof ApiPlansIdRoute
+  '/api/plans/subscribe': typeof ApiPlansSubscribeRoute
   '/api/startups/$id': typeof ApiStartupsIdRoute
   '/api/users/plan': typeof ApiUsersPlanRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/api/favorites': typeof ApiFavoritesIndexRoute
+  '/api/plans': typeof ApiPlansIndexRoute
   '/api/startups': typeof ApiStartupsIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
@@ -140,12 +164,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/api/auth/verify': typeof ApiAuthVerifyRoute
+  '/api/plans/$id': typeof ApiPlansIdRoute
+  '/api/plans/subscribe': typeof ApiPlansSubscribeRoute
   '/api/startups/$id': typeof ApiStartupsIdRoute
   '/api/users/plan': typeof ApiUsersPlanRoute
   '/demo/api/names': typeof DemoApiNamesRoute
   '/demo/start/api-request': typeof DemoStartApiRequestRoute
   '/demo/start/server-funcs': typeof DemoStartServerFuncsRoute
   '/api/favorites/': typeof ApiFavoritesIndexRoute
+  '/api/plans/': typeof ApiPlansIndexRoute
   '/api/startups/': typeof ApiStartupsIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
@@ -159,12 +186,15 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/api/auth/verify'
+    | '/api/plans/$id'
+    | '/api/plans/subscribe'
     | '/api/startups/$id'
     | '/api/users/plan'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/api/favorites'
+    | '/api/plans'
     | '/api/startups'
     | '/api/users'
     | '/demo/start/ssr/data-only'
@@ -176,12 +206,15 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/api/auth/verify'
+    | '/api/plans/$id'
+    | '/api/plans/subscribe'
     | '/api/startups/$id'
     | '/api/users/plan'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/api/favorites'
+    | '/api/plans'
     | '/api/startups'
     | '/api/users'
     | '/demo/start/ssr/data-only'
@@ -193,12 +226,15 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/api/auth/verify'
+    | '/api/plans/$id'
+    | '/api/plans/subscribe'
     | '/api/startups/$id'
     | '/api/users/plan'
     | '/demo/api/names'
     | '/demo/start/api-request'
     | '/demo/start/server-funcs'
     | '/api/favorites/'
+    | '/api/plans/'
     | '/api/startups/'
     | '/api/users/'
     | '/demo/start/ssr/data-only'
@@ -211,12 +247,15 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   ApiAuthVerifyRoute: typeof ApiAuthVerifyRoute
+  ApiPlansIdRoute: typeof ApiPlansIdRoute
+  ApiPlansSubscribeRoute: typeof ApiPlansSubscribeRoute
   ApiStartupsIdRoute: typeof ApiStartupsIdRoute
   ApiUsersPlanRoute: typeof ApiUsersPlanRoute
   DemoApiNamesRoute: typeof DemoApiNamesRoute
   DemoStartApiRequestRoute: typeof DemoStartApiRequestRoute
   DemoStartServerFuncsRoute: typeof DemoStartServerFuncsRoute
   ApiFavoritesIndexRoute: typeof ApiFavoritesIndexRoute
+  ApiPlansIndexRoute: typeof ApiPlansIndexRoute
   ApiStartupsIndexRoute: typeof ApiStartupsIndexRoute
   ApiUsersIndexRoute: typeof ApiUsersIndexRoute
   DemoStartSsrDataOnlyRoute: typeof DemoStartSsrDataOnlyRoute
@@ -253,6 +292,13 @@ declare module '@tanstack/react-router' {
       path: '/api/startups'
       fullPath: '/api/startups'
       preLoaderRoute: typeof ApiStartupsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/plans/': {
+      id: '/api/plans/'
+      path: '/api/plans'
+      fullPath: '/api/plans'
+      preLoaderRoute: typeof ApiPlansIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/favorites/': {
@@ -297,6 +343,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiStartupsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/plans/subscribe': {
+      id: '/api/plans/subscribe'
+      path: '/api/plans/subscribe'
+      fullPath: '/api/plans/subscribe'
+      preLoaderRoute: typeof ApiPlansSubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/plans/$id': {
+      id: '/api/plans/$id'
+      path: '/api/plans/$id'
+      fullPath: '/api/plans/$id'
+      preLoaderRoute: typeof ApiPlansIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/verify': {
       id: '/api/auth/verify'
       path: '/api/auth/verify'
@@ -339,12 +399,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   ApiAuthVerifyRoute: ApiAuthVerifyRoute,
+  ApiPlansIdRoute: ApiPlansIdRoute,
+  ApiPlansSubscribeRoute: ApiPlansSubscribeRoute,
   ApiStartupsIdRoute: ApiStartupsIdRoute,
   ApiUsersPlanRoute: ApiUsersPlanRoute,
   DemoApiNamesRoute: DemoApiNamesRoute,
   DemoStartApiRequestRoute: DemoStartApiRequestRoute,
   DemoStartServerFuncsRoute: DemoStartServerFuncsRoute,
   ApiFavoritesIndexRoute: ApiFavoritesIndexRoute,
+  ApiPlansIndexRoute: ApiPlansIndexRoute,
   ApiStartupsIndexRoute: ApiStartupsIndexRoute,
   ApiUsersIndexRoute: ApiUsersIndexRoute,
   DemoStartSsrDataOnlyRoute: DemoStartSsrDataOnlyRoute,

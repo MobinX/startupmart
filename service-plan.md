@@ -40,8 +40,10 @@ Before diving into the service implementations, let's define the key data types 
 ### Authorization Rules
 
 - **Startup Owners:** Can create, read (full), update, and delete their own startups.
-- **Premium Investors:** Can view full startup details including contact information.
-- **Free Investors:** Can view limited public startup information.
+- **Investors with Plans:** Can view startup details based on their subscribed plan's `allowedFields`:
+  - Section-level access: `startup`, `financials`, `traction`, `salesMarketing`, `operational`, `legal`, `assets`, `contacts`
+  - Field-level access: `startupMarketing`, `startupProfit`, `startupRevenue`, `startupValuation`, `startupCustomers`, `startupGrowth`
+- **Investors without Plans:** Cannot view detailed startup information.
 - **All Users:** Can manage their own favorites and profile.
 
 ## 3. Error Types and Handling
@@ -110,10 +112,16 @@ This service will handle all CRUD operations and business logic for startup prof
     - Fetches all data for a given startup.
     - Handles authorization:
       - Startup owners can see everything, including view counts.
-      - Premium investors can see all details, including contact info.
-      - Free investors see limited public data.
+      - Non-owners must have an active plan subscription.
+      - Returns only fields allowed by the user's plan(s) `allowedFields`.
     - Increments the view count if the viewer is not the owner.
-    - **Throws:** `NotFoundError` if startup does not exist.
+    - **Throws:** `NotFoundError` if startup does not exist, `AuthorizationError` if user has no active plan.
+  - `getUserAllowedFields(userId: number): Promise<PlanAllowedField[]>`
+    - Fetches all allowed fields from the user's active plan subscriptions.
+    - Merges fields from multiple active plans if applicable.
+  - `filterStartupDetailsByAllowedFields(startupDetails: StartupDetails, allowedFields: PlanAllowedField[]): Partial<StartupDetails>`
+    - Filters startup details based on allowed fields from user's plan.
+    - Supports both section-level and field-level access control.
   - `getPublicStartups(filters: StartupFilters): Promise<Partial<Startup>[]>`
     - Fetches a list of startups for public view.
     - Applies filters for industry, team size, etc.
@@ -179,6 +187,29 @@ This service will manage investors' favorite startups.
   - `getFavorites(userId: number): Promise<Startup[]>`
     - Retrieves all favorite startups for a given user.
     - **Throws:** `NotFoundError` if user does not exist.
+
+### `plan.service.ts` (Future Implementation)
+
+This service will manage subscription plans and user plan subscriptions.
+
+- **`PlanService` class:**
+  - `constructor(db: Drizzle.db)`
+  - `getAllPlans(planFor?: 'investor' | 'startup_owner'): Promise<Plan[]>`
+    - Fetches all available plans, optionally filtered by target user type.
+  - `getPlanById(planId: number): Promise<Plan>`
+    - Fetches a specific plan by ID.
+    - **Throws:** `NotFoundError` if plan does not exist.
+  - `createPlan(data: CreatePlanInput): Promise<Plan>`
+    - Creates a new subscription plan (admin only).
+    - **Throws:** `ValidationError` for invalid input, `AuthorizationError` if user is not admin.
+  - `subscribeToPlan(userId: number, planId: number): Promise<UserPlan>`
+    - Subscribes a user to a plan.
+    - **Throws:** `NotFoundError` if plan does not exist, `ConflictError` if already subscribed.
+  - `unsubscribeFromPlan(userId: number, planId: number): Promise<void>`
+    - Unsubscribes a user from a plan (sets `is_active` to false).
+    - **Throws:** `NotFoundError` if subscription does not exist.
+  - `getUserPlans(userId: number): Promise<Plan[]>`
+    - Fetches all active plans for a user.
 
 ## 6. API Route Implementation
 

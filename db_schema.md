@@ -9,6 +9,8 @@ erDiagram
     USERS ||--o{ STARTUPS : "owns"
     USERS ||--o{ PAYMENTS : "makes"
     USERS ||--o{ FAVORITES : "has"
+    USERS ||--o{ USER_PLANS : "subscribes"
+    PLANS ||--o{ USER_PLANS : "has"
     STARTUPS ||--o{ PAYMENTS : "receives"
     STARTUPS ||--o{ STARTUP_VIEWS : "has"
     STARTUPS ||--|{ STARTUP_FINANCIALS : "has"
@@ -25,6 +27,23 @@ erDiagram
         string role "startup_owner, investor"
         string current_pricing_plan "free, premium"
         timestamp created_at
+    }
+    PLANS {
+        int id PK
+        string name
+        string plan_for "investor, startup_owner"
+        json allowed_fields "array of field names"
+        decimal price
+        string description
+        timestamp created_at
+    }
+    USER_PLANS {
+        int id PK
+        int user_id FK
+        int plan_id FK
+        boolean is_active
+        timestamp started_at
+        timestamp expires_at
     }
     STARTUPS {
         int id PK
@@ -230,3 +249,28 @@ Stores the private contact information for startups, accessible only to premium 
 -   `startup_id`: Foreign Key to `STARTUPS`.
 -   `contact_email`: The private contact email for the startup.
 -   `contact_phone`: The private contact phone for the startup.
+
+### `PLANS`
+
+Defines subscription plans that control access to different startup data fields.
+
+-   `id`: Primary Key
+-   `name`: The name of the plan (e.g., "Basic Investor", "Premium Investor").
+-   `plan_for`: Target user type (`investor` or `startup_owner`).
+-   `allowed_fields`: JSON array of field identifiers that this plan grants access to. Possible values include:
+    - Section-level: `startup`, `financials`, `traction`, `salesMarketing`, `operational`, `legal`, `assets`, `contacts`
+    - Field-level: `startupMarketing`, `startupProfit`, `startupRevenue`, `startupValuation`, `startupCustomers`, `startupGrowth`
+-   `price`: The price of the plan.
+-   `description`: A description of what the plan offers.
+-   `created_at`: Timestamp of plan creation.
+
+### `USER_PLANS`
+
+Links users to their subscribed plans.
+
+-   `id`: Primary Key
+-   `user_id`: Foreign Key to `USERS`.
+-   `plan_id`: Foreign Key to `PLANS`.
+-   `is_active`: Whether the plan subscription is currently active.
+-   `started_at`: Timestamp of when the subscription started.
+-   `expires_at`: Timestamp of when the subscription expires (nullable for lifetime plans).

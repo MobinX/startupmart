@@ -134,3 +134,49 @@ export const startupContacts = sqliteTable('startup_contacts', {
   contactEmail: text('contact_email'),
   contactPhone: text('contact_phone'),
 });
+
+// Allowed fields that can be included in a plan
+export const PLAN_ALLOWED_FIELDS = [
+  // Basic startup info
+  'startup',
+  // Related sections
+  'financials',
+  'traction',
+  'salesMarketing',
+  'operational',
+  'legal',
+  'assets',
+  'contacts',
+  // Specific fields
+  'startupMarketing',
+  'startupProfit',
+  'startupRevenue',
+  'startupValuation',
+  'startupCustomers',
+  'startupGrowth',
+] as const;
+
+export type PlanAllowedField = typeof PLAN_ALLOWED_FIELDS[number];
+
+export const plans = sqliteTable('plans', {
+  id: integer('id').primaryKey(),
+  name: text('name').notNull(),
+  planFor: text('plan_for', { enum: ['investor', 'startup_owner'] }).notNull(),
+  // JSON array of allowed fields
+  allowedFields: text('allowed_fields', { mode: 'json' }).$type<PlanAllowedField[]>().notNull(),
+  price: real('price').notNull().default(0),
+  description: text('description'),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+// User plan subscriptions - links users to their active plans
+export const userPlans = sqliteTable('user_plans', {
+  id: integer('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  planId: integer('plan_id').references(() => plans.id, { onDelete: 'cascade' }).notNull(),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  startedAt: integer('started_at', { mode: 'timestamp' }).notNull().default(sql`CURRENT_TIMESTAMP`),
+  expiresAt: integer('expires_at', { mode: 'timestamp' }),
+}, (t) => ({
+  unq: unique().on(t.userId, t.planId),
+}));

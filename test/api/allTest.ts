@@ -4,3 +4,4 @@
 import './user.test';
 import './startup.test';
 import './favorites.test';
+import './plans.test';

@@ -11,6 +11,9 @@ import {
   startupContacts,
   startupViews,
   favorites,
+  plans,
+  userPlans,
+  PlanAllowedField,
 } from '@/db/schema';
 import { AuthUser } from '@/lib/auth-middleware';
 import { z } from 'zod';
@@ -136,6 +139,153 @@ export interface StartupDetails extends StartupSummary {
 export class StartupService {
   constructor(private db: Database) {}
 
+  /**
+   * Get the allowed fields for a user based on their active plan subscriptions
+   */
+  async getUserAllowedFields(userId: number): Promise<PlanAllowedField[]> {
+    const userPlanRecords = await this.db
+      .select({
+        allowedFields: plans.allowedFields,
+      })
+      .from(userPlans)
+      .innerJoin(plans, eq(userPlans.planId, plans.id))
+      .where(
+        and(
+          eq(userPlans.userId, userId),
+          eq(userPlans.isActive, true)
+        )
+      );
+
+    // Merge all allowed fields from all active plans
+    const allAllowedFields = new Set<PlanAllowedField>();
+    for (const record of userPlanRecords) {
+      if (record.allowedFields) {
+        for (const field of record.allowedFields) {
+          allAllowedFields.add(field);
+        }
+      }
+    }
+
+    return Array.from(allAllowedFields);
+  }
+
+  /**
+   * Filter startup details based on allowed fields
+   */
+  filterStartupDetailsByAllowedFields(
+    startupDetails: StartupDetails,
+    allowedFields: PlanAllowedField[]
+  ): Partial<StartupDetails> {
+    const filtered: Partial<StartupDetails> = {};
+
+    // Basic startup info is always included if 'startup' is in allowed fields
+    if (allowedFields.includes('startup')) {
+      filtered.id = startupDetails.id;
+      filtered.name = startupDetails.name;
+      filtered.industry = startupDetails.industry;
+      filtered.yearFounded = startupDetails.yearFounded;
+      filtered.description = startupDetails.description;
+      filtered.websiteLink = startupDetails.websiteLink;
+      filtered.founderBackground = startupDetails.founderBackground;
+      filtered.teamSize = startupDetails.teamSize;
+      filtered.sellEquity = startupDetails.sellEquity;
+      filtered.sellBusiness = startupDetails.sellBusiness;
+      filtered.reasonForSelling = startupDetails.reasonForSelling;
+      filtered.desiredBuyerProfile = startupDetails.desiredBuyerProfile;
+      filtered.askingPrice = startupDetails.askingPrice;
+      filtered.createdAt = startupDetails.createdAt;
+    }
+
+    // Check for section-level access
+    if (allowedFields.includes('financials') && startupDetails.financials) {
+      filtered.financials = startupDetails.financials;
+    }
+
+    if (allowedFields.includes('traction') && startupDetails.traction) {
+      filtered.traction = startupDetails.traction;
+    }
+
+    if (allowedFields.includes('salesMarketing') && startupDetails.salesMarketing) {
+      filtered.salesMarketing = startupDetails.salesMarketing;
+    }
+
+    if (allowedFields.includes('operational') && startupDetails.operational) {
+      filtered.operational = startupDetails.operational;
+    }
+
+    if (allowedFields.includes('legal') && startupDetails.legal) {
+      filtered.legal = startupDetails.legal;
+    }
+
+    if (allowedFields.includes('assets') && startupDetails.assets) {
+      filtered.assets = startupDetails.assets;
+    }
+
+    if (allowedFields.includes('contacts') && startupDetails.contacts) {
+      filtered.contacts = startupDetails.contacts;
+    }
+
+    // Handle specific field-level access (overrides section-level if more granular)
+    if (allowedFields.includes('startupRevenue') && startupDetails.financials) {
+      if (!filtered.financials) {
+        filtered.financials = {} as any;
+      }
+      (filtered.financials as any).monthlyRevenue = startupDetails.financials.monthlyRevenue;
+      (filtered.financials as any).annualRevenue = startupDetails.financials.annualRevenue;
+    }
+
+    if (allowedFields.includes('startupProfit') && startupDetails.financials) {
+      if (!filtered.financials) {
+        filtered.financials = {} as any;
+      }
+      (filtered.financials as any).monthlyProfitLoss = startupDetails.financials.monthlyProfitLoss;
+      (filtered.financials as any).grossMargin = startupDetails.financials.grossMargin;
+    }
+
+    if (allowedFields.includes('startupValuation') && startupDetails.financials) {
+      if (!filtered.financials) {
+        filtered.financials = {} as any;
+      }
+      (filtered.financials as any).valuationExpectation = startupDetails.financials.valuationExpectation;
+      (filtered.financials as any).fundingRaised = startupDetails.financials.fundingRaised;
+    }
+
+    if (allowedFields.includes('startupCustomers') && startupDetails.traction) {
+      if (!filtered.traction) {
+        filtered.traction = {} as any;
+      }
+      (filtered.traction as any).totalCustomers = startupDetails.traction.totalCustomers;
+      (filtered.traction as any).monthlyActiveCustomers = startupDetails.traction.monthlyActiveCustomers;
+      (filtered.traction as any).majorClients = startupDetails.traction.majorClients;
+    }
+
+    if (allowedFields.includes('startupGrowth') && startupDetails.traction) {
+      if (!filtered.traction) {
+        filtered.traction = {} as any;
+      }
+      (filtered.traction as any).customerGrowthYoy = startupDetails.traction.customerGrowthYoy;
+      (filtered.traction as any).customerRetentionRate = startupDetails.traction.customerRetentionRate;
+      (filtered.traction as any).churnRate = startupDetails.traction.churnRate;
+    }
+
+    if (allowedFields.includes('startupMarketing') && startupDetails.salesMarketing) {
+      if (!filtered.salesMarketing) {
+        filtered.salesMarketing = {} as any;
+      }
+      (filtered.salesMarketing as any).marketingPlatforms = startupDetails.salesMarketing.marketingPlatforms;
+      (filtered.salesMarketing as any).cac = startupDetails.salesMarketing.cac;
+      (filtered.salesMarketing as any).ltv = startupDetails.salesMarketing.ltv;
+      (filtered.salesMarketing as any).conversionRate = startupDetails.salesMarketing.conversionRate;
+    }
+
+    // View count for owners
+    if (startupDetails.viewCount !== undefined) {
+      filtered.viewCount = startupDetails.viewCount;
+    }
+
+    return filtered;
+  }
+
   async createStartup(userId: number, rawData: unknown) {
     try {
       const validation = createStartupSchema.safeParse(rawData);
@@ -249,10 +399,16 @@ export class StartupService {
 
       // Check authorization
       const isOwner = user?.id === startup.userId;
-      const isPremium = user?.currentPricingPlan === 'premium';
 
-      if (!isOwner && !isPremium) {
-        return { error: 'Premium subscription required to view startup details', status: 403 };
+      // Get user's allowed fields from their plan subscriptions
+      let userAllowedFields: PlanAllowedField[] = [];
+      if (user && !isOwner) {
+        userAllowedFields = await this.getUserAllowedFields(user.id);
+        
+        // If user has no active plan with any allowed fields, deny access
+        if (userAllowedFields.length === 0) {
+          return { error: 'You need an active plan to view startup details', status: 403 };
+        }
       }
 
       // Record view for analytics (only for non-owners)
@@ -288,7 +444,15 @@ export class StartupService {
         viewCount,
       };
 
-      return { startup: startupDetails, status: 200 };
+      // If user is the owner, return full details
+      if (isOwner) {
+        return { startup: startupDetails, status: 200 };
+      }
+
+      // For non-owners, filter startup details based on their plan's allowed fields
+      const filteredStartup = this.filterStartupDetailsByAllowedFields(startupDetails, userAllowedFields);
+
+      return { startup: filteredStartup, allowedFields: userAllowedFields, status: 200 };
     } catch (error) {
       console.error('Failed to fetch startup:', error);
       return { error: 'Failed to fetch startup', status: 500 };
