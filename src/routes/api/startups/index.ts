@@ -74,7 +74,7 @@ export const Route = createFileRoute('/api/startups/')({
 
           return json(result, { status: result.status });
         } catch (error) {
-          console.error('Unhandled error in POST /startups:', error);
+          console.log('Unhandled error in POST /startups:', error);
           return json({ error: 'Internal server error' }, { status: 500 });
         }
       },

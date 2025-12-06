@@ -46,7 +46,7 @@ export class UserService {
 
       return { user, status: 200 };
     } catch (error) {
-      console.error('Failed to fetch user:', error);
+      console.log('Failed to fetch user:', error);
       return { error: 'Failed to fetch user', status: 500 };
     }
   }
@@ -64,7 +64,7 @@ export class UserService {
       }
       return { user, status: 200 };
     } catch (error) {
-      console.error('Failed to fetch user by firebase uid:', error);
+      console.log('Failed to fetch user by firebase uid:', error);
       return { error: 'Failed to fetch user', status: 500 };
     }
   }
@@ -92,7 +92,7 @@ export class UserService {
       if (error.message?.includes('UNIQUE') || error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
         return { error: 'User already exists', status: 409 };
       }
-      console.error('Failed to create user:', error);
+      console.log('Failed to create user:', error);
       return { error: 'Failed to create user', status: 500 };
     }
   }
@@ -117,7 +117,7 @@ export class UserService {
 
       return { user, message: 'Profile updated successfully', status: 200 };
     } catch (error) {
-      console.error('Failed to update user profile:', error);
+      console.log('Failed to update user profile:', error);
       return { error: 'Failed to update user profile', status: 500 };
     }
   }
@@ -142,7 +142,7 @@ export class UserService {
 
       return { user, message: 'Pricing plan updated successfully', status: 200 };
     } catch (error) {
-      console.error('Failed to update pricing plan:', error);
+      console.log('Failed to update pricing plan:', error);
       return { error: 'Failed to update pricing plan', status: 500 };
     }
   }
@@ -158,7 +158,7 @@ export class UserService {
       };
       return { stats, status: 200 };
     } catch (error) {
-      console.error('Failed to get user stats:', error);
+      console.log('Failed to get user stats:', error);
       return { error: 'Failed to get user stats', status: 500 };
     }
   }

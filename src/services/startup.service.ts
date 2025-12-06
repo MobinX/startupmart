@@ -370,7 +370,7 @@ export class StartupService {
 
       return { startup, message: 'Startup created successfully', status: 201 };
     } catch (error) {
-      console.error('Failed to create startup:', error);
+      console.log('Failed to create startup:', error);
       return { error: 'Failed to create startup', status: 500 };
     }
   }
@@ -454,7 +454,7 @@ export class StartupService {
 
       return { startup: filteredStartup, allowedFields: userAllowedFields, status: 200 };
     } catch (error) {
-      console.error('Failed to fetch startup:', error);
+      console.log('Failed to fetch startup:', error);
       return { error: 'Failed to fetch startup', status: 500 };
     }
   }
@@ -513,7 +513,7 @@ export class StartupService {
 
       return { startups: result, status: 200 };
     } catch (error) {
-      console.error('Failed to fetch startups:', error);
+      console.log('Failed to fetch startups:', error);
       return { error: 'Failed to fetch startups', status: 500 };
     }
   }
@@ -618,7 +618,7 @@ export class StartupService {
 
       return { startup: updatedStartup, message: 'Startup updated successfully', status: 200 };
     } catch (error) {
-      console.error('Failed to update startup:', error);
+      console.log('Failed to update startup:', error);
       return { error: 'Failed to update startup', status: 500 };
     }
   }
@@ -657,7 +657,7 @@ export class StartupService {
 
       return { message: 'Startup deleted successfully', status: 200 };
     } catch (error) {
-      console.error('Failed to delete startup:', error);
+      console.log('Failed to delete startup:', error);
       return { error: 'Failed to delete startup', status: 500 };
     }
   }

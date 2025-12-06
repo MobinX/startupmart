@@ -1,5 +1,5 @@
 // export const BASE_URL = 'http://localhost:3000/api';
-export const BASE_URL = '/api';
+export const BASE_URL = 'https://startupmart.mobin.workers.dev/api';
 export const TEST_TOKEN_OWNER = 'TEST_TOKEN_OWNER';
 export const TEST_TOKEN_INVESTOR = 'TEST_TOKEN_INVESTOR';
 

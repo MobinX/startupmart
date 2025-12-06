@@ -46,7 +46,7 @@ export class FavoritesService {
       ) {
         return { error: 'Startup not found', status: 404 };
       }
-      console.error('Failed to add favorite:', error);
+      console.log('Failed to add favorite:', error);
       return { error: 'Failed to add favorite', status: 500 };
     }
   }
@@ -71,7 +71,7 @@ export class FavoritesService {
 
       return { message: 'Removed from favorites', status: 200 };
     } catch (error) {
-      console.error('Failed to remove favorite:', error);
+      console.log('Failed to remove favorite:', error);
       return { error: 'Failed to remove favorite', status: 500 };
     }
   }
@@ -102,7 +102,7 @@ export class FavoritesService {
       
       return { favorites: result, status: 200 };
     } catch (error) {
-      console.error('Failed to get favorites:', error);
+      console.log('Failed to get favorites:', error);
       return { error: 'Failed to get favorites', status: 500 };
     }
   }
@@ -117,7 +117,7 @@ export class FavoritesService {
 
       return { isFavorited: !!favorite, status: 200 };
     } catch (error) {
-      console.error('Failed to check if favorited:', error);
+      console.log('Failed to check if favorited:', error);
       return { error: 'Failed to check if favorited', status: 500 };
     }
   }

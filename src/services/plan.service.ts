@@ -72,7 +72,7 @@ export class PlanService {
 
       return { plans: result, status: 200 };
     } catch (error) {
-      console.error('Failed to fetch plans:', error);
+      console.log('Failed to fetch plans:', error);
       return { error: 'Failed to fetch plans', status: 500 };
     }
   }
@@ -94,7 +94,7 @@ export class PlanService {
 
       return { plan, status: 200 };
     } catch (error) {
-      console.error('Failed to fetch plan:', error);
+      console.log('Failed to fetch plan:', error);
       return { error: 'Failed to fetch plan', status: 500 };
     }
   }
@@ -125,7 +125,7 @@ export class PlanService {
 
       return { plan, message: 'Plan created successfully', status: 201 };
     } catch (error) {
-      console.error('Failed to create plan:', error);
+      console.log('Failed to create plan:', error);
       return { error: 'Failed to create plan', status: 500 };
     }
   }
@@ -168,7 +168,7 @@ export class PlanService {
 
       return { plan, message: 'Plan updated successfully', status: 200 };
     } catch (error) {
-      console.error('Failed to update plan:', error);
+      console.log('Failed to update plan:', error);
       return { error: 'Failed to update plan', status: 500 };
     }
   }
@@ -192,7 +192,7 @@ export class PlanService {
 
       return { message: 'Plan deleted successfully', status: 200 };
     } catch (error) {
-      console.error('Failed to delete plan:', error);
+      console.log('Failed to delete plan:', error);
       return { error: 'Failed to delete plan', status: 500 };
     }
   }
@@ -267,7 +267,7 @@ export class PlanService {
       if (error.message?.includes('UNIQUE') || error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
         return { error: 'Already subscribed to this plan', status: 409 };
       }
-      console.error('Failed to subscribe to plan:', error);
+      console.log('Failed to subscribe to plan:', error);
       return { error: 'Failed to subscribe to plan', status: 500 };
     }
   }
@@ -300,7 +300,7 @@ export class PlanService {
 
       return { subscription: updated, message: 'Successfully unsubscribed from plan', status: 200 };
     } catch (error) {
-      console.error('Failed to unsubscribe from plan:', error);
+      console.log('Failed to unsubscribe from plan:', error);
       return { error: 'Failed to unsubscribe from plan', status: 500 };
     }
   }
@@ -331,7 +331,7 @@ export class PlanService {
 
       return { plans: userPlansResult, status: 200 };
     } catch (error) {
-      console.error('Failed to fetch user plans:', error);
+      console.log('Failed to fetch user plans:', error);
       return { error: 'Failed to fetch user plans', status: 500 };
     }
   }
