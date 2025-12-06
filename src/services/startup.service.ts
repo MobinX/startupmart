@@ -22,7 +22,7 @@ export const createStartupSchema = z.object({
   startup: z.object({
     name: z.string().min(1),
     industry: z.string().min(1),
-    yearFounded: z.number().int().min(1900).max(new Date().getFullYear()),
+    yearFounded: z.number().int(),
     description: z.string().min(1),
     websiteLink: z.string().url().optional().or(z.literal('')),
     founderBackground: z.string().min(1),
@@ -291,6 +291,7 @@ export class StartupService {
       const validation = createStartupSchema.safeParse(rawData);
       
       if (!validation.success) {
+        console.log('Startup creation validation failed:', validation.error.errors);
         return { error: 'Invalid startup data', details: validation.error.errors, status: 400 };
       }
       
@@ -391,6 +392,7 @@ export class StartupService {
         .where(eq(startups.id, startupId));
 
       if (rows.length === 0) {
+        console.log('Startup not found for ID:', startupId);
         return { error: 'Startup not found', status: 404 };
       }
 
@@ -407,6 +409,7 @@ export class StartupService {
         
         // If user has no active plan with any allowed fields, deny access
         if (userAllowedFields.length === 0) {
+          console.log('User has no active plan with allowed fields:', user.id);
           return { error: 'You need an active plan to view startup details', status: 403 };
         }
       }
@@ -536,10 +539,12 @@ export class StartupService {
         .get();
 
       if (!existingStartup) {
+        console.log('Startup not found for ID:', startupId);
         return { error: 'Startup not found', status: 404 };
       }
 
       if (existingStartup.userId !== userId) {
+        console.log('User is not authorized to update startup:', userId);
         return { error: 'You are not authorized to update this startup', status: 403 };
       }
 
@@ -633,10 +638,12 @@ export class StartupService {
         .get();
 
       if (!startup) {
+        console.log('Startup not found for ID:', startupId);
         return { error: 'Startup not found', status: 404 };
       }
 
       if (startup.userId !== userId) {
+        console.log('User is not authorized to delete startup:', userId);
         return { error: 'You are not authorized to delete this startup', status: 403 };
       }
 

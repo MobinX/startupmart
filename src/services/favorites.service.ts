@@ -14,6 +14,7 @@ export class FavoritesService {
     try {
       const validation = favoriteSchema.safeParse(rawData);
       if (!validation.success) {
+        console.log('Favorite creation validation failed:', validation.error.errors);
         return { error: 'Invalid favorite data', details: validation.error.errors, status: 400 };
       }
       const { startupId } = validation.data;
@@ -36,6 +37,7 @@ export class FavoritesService {
         causeMessage.includes('UNIQUE') ||
         error.code === 'SQLITE_CONSTRAINT_UNIQUE'
       ) {
+        console.log('User', userId, 'already favorited startup:');
         return { error: 'Startup already in favorites', status: 409 };
       }
       // Handle foreign key violation (startup doesn't exist)
@@ -44,6 +46,7 @@ export class FavoritesService {
         causeMessage.includes('FOREIGN KEY') ||
         error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY'
       ) {
+        console.log('Startup not found for favoriting by user:', userId, 'startup:');
         return { error: 'Startup not found', status: 404 };
       }
       console.log('Failed to add favorite:', error);
@@ -55,6 +58,7 @@ export class FavoritesService {
     try {
       const validation = favoriteSchema.safeParse(rawData);
       if (!validation.success) {
+        console.log('Favorite removal validation failed:', validation.error.errors);
         return { error: 'Invalid favorite data', details: validation.error.errors, status: 400 };
       }
       const { startupId } = validation.data;
@@ -66,6 +70,7 @@ export class FavoritesService {
         .returning({ id: favorites.startupId });
 
       if (result.length === 0) {
+        console.log('Favorite not found for user:', userId, 'startup:', startupId);
         return { error: 'Favorite not found', status: 404 };
       }
 

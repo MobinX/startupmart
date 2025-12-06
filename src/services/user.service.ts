@@ -73,6 +73,7 @@ export class UserService {
     try {
       const validation = createUserSchema.safeParse(rawData);
       if (!validation.success) {
+        console.log('User creation validation failed:', validation.error.errors);
         return { error: 'Invalid user data', details: validation.error.errors, status: 400 };
       }
       const userData = validation.data;
@@ -101,6 +102,7 @@ export class UserService {
     try {
       const validation = updateUserProfileSchema.safeParse(rawData);
       if (!validation.success) {
+        console.log('User profile update validation failed:', validation.error.errors);
         return { error: 'Invalid profile data', details: validation.error.errors, status: 400 };
       }
       const profileData = validation.data;
@@ -112,6 +114,7 @@ export class UserService {
         .returning();
 
       if (!user) {
+        console.log('User not found for ID:', userId);
         return { error: 'User not found', status: 404 };
       }
 
@@ -126,6 +129,7 @@ export class UserService {
     try {
       const validation = updatePricingPlanSchema.safeParse(rawData);
       if (!validation.success) {
+        console.log('Pricing plan update validation failed:', validation.error.errors);
         return { error: 'Invalid pricing plan data', details: validation.error.errors, status: 400 };
       }
       const { plan } = validation.data;
@@ -137,6 +141,7 @@ export class UserService {
         .returning();
 
       if (!user) {
+        console.log('User not found for ID:', userId);
         return { error: 'User not found', status: 404 };
       }
 

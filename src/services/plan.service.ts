@@ -89,6 +89,7 @@ export class PlanService {
         .get();
 
       if (!plan) {
+        console.log('Plan not found for ID:', planId);
         return { error: 'Plan not found', status: 404 };
       }
 
@@ -137,6 +138,7 @@ export class PlanService {
     try {
       const validation = updatePlanSchema.safeParse(rawData);
       if (!validation.success) {
+        console.log('Plan update validation failed:', validation.error.errors);
         return { error: 'Invalid plan data', details: validation.error.errors, status: 400 };
       }
 
@@ -150,6 +152,7 @@ export class PlanService {
         .get();
 
       if (!existing) {
+        console.log('Plan not found for ID:', planId);
         return { error: 'Plan not found', status: 404 };
       }
 
@@ -185,6 +188,7 @@ export class PlanService {
         .get();
 
       if (!existing) {
+        console.log('Plan not found for ID:', planId);
         return { error: 'Plan not found', status: 404 };
       }
 
@@ -204,6 +208,7 @@ export class PlanService {
     try {
       const validation = subscribeToPlanSchema.safeParse(rawData);
       if (!validation.success) {
+        console.log('Subscription validation failed:', validation.error.errors);
         return { error: 'Invalid subscription data', details: validation.error.errors, status: 400 };
       }
 
@@ -217,6 +222,7 @@ export class PlanService {
         .get();
 
       if (!plan) {
++        console.log('Plan not found for ID:', planId);
         return { error: 'Plan not found', status: 404 };
       }
 
@@ -245,8 +251,10 @@ export class PlanService {
             .where(eq(userPlans.id, existingSubscription.id))
             .returning();
 
+            console.log('Reactivated subscription for user:', userId, 'plan:', planId);
           return { subscription: updated, message: 'Subscription reactivated', status: 200 };
         }
+        console.log('User', userId, 'already subscribed to plan:', planId);
         return { error: 'Already subscribed to this plan', status: 409 };
       }
 
@@ -265,6 +273,7 @@ export class PlanService {
       return { subscription, plan, message: 'Successfully subscribed to plan', status: 201 };
     } catch (error: any) {
       if (error.message?.includes('UNIQUE') || error.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        console.log('User is already subscribed to plan:', userId);
         return { error: 'Already subscribed to this plan', status: 409 };
       }
       console.log('Failed to subscribe to plan:', error);
@@ -289,6 +298,7 @@ export class PlanService {
         .get();
 
       if (!subscription) {
++        console.log('Subscription not found for user:', userId, 'plan:', planId);
         return { error: 'Subscription not found', status: 404 };
       }
 
@@ -342,6 +352,7 @@ export class PlanService {
   async getUserAllowedFields(userId: number): Promise<PlanAllowedField[]> {
     const result = await this.getUserPlans(userId);
     if ('error' in result) {
+        console.log('Failed to get user plans:', result.error);
       return [];
     }
 
