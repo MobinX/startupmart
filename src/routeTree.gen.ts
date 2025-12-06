@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiUsersIndexRouteImport } from './routes/api/users/index'
+import { Route as ApiSwaggerIndexRouteImport } from './routes/api/swagger/index'
 import { Route as ApiStartupsIndexRouteImport } from './routes/api/startups/index'
 import { Route as ApiPlansIndexRouteImport } from './routes/api/plans/index'
 import { Route as ApiFavoritesIndexRouteImport } from './routes/api/favorites/index'
@@ -41,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
 const ApiUsersIndexRoute = ApiUsersIndexRouteImport.update({
   id: '/api/users/',
   path: '/api/users/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSwaggerIndexRoute = ApiSwaggerIndexRouteImport.update({
+  id: '/api/swagger/',
+  path: '/api/swagger/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiStartupsIndexRoute = ApiStartupsIndexRouteImport.update({
@@ -133,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/api/favorites': typeof ApiFavoritesIndexRoute
   '/api/plans': typeof ApiPlansIndexRoute
   '/api/startups': typeof ApiStartupsIndexRoute
+  '/api/swagger': typeof ApiSwaggerIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
@@ -153,6 +160,7 @@ export interface FileRoutesByTo {
   '/api/favorites': typeof ApiFavoritesIndexRoute
   '/api/plans': typeof ApiPlansIndexRoute
   '/api/startups': typeof ApiStartupsIndexRoute
+  '/api/swagger': typeof ApiSwaggerIndexRoute
   '/api/users': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
@@ -174,6 +182,7 @@ export interface FileRoutesById {
   '/api/favorites/': typeof ApiFavoritesIndexRoute
   '/api/plans/': typeof ApiPlansIndexRoute
   '/api/startups/': typeof ApiStartupsIndexRoute
+  '/api/swagger/': typeof ApiSwaggerIndexRoute
   '/api/users/': typeof ApiUsersIndexRoute
   '/demo/start/ssr/data-only': typeof DemoStartSsrDataOnlyRoute
   '/demo/start/ssr/full-ssr': typeof DemoStartSsrFullSsrRoute
@@ -196,6 +205,7 @@ export interface FileRouteTypes {
     | '/api/favorites'
     | '/api/plans'
     | '/api/startups'
+    | '/api/swagger'
     | '/api/users'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/api/favorites'
     | '/api/plans'
     | '/api/startups'
+    | '/api/swagger'
     | '/api/users'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/api/favorites/'
     | '/api/plans/'
     | '/api/startups/'
+    | '/api/swagger/'
     | '/api/users/'
     | '/demo/start/ssr/data-only'
     | '/demo/start/ssr/full-ssr'
@@ -257,6 +269,7 @@ export interface RootRouteChildren {
   ApiFavoritesIndexRoute: typeof ApiFavoritesIndexRoute
   ApiPlansIndexRoute: typeof ApiPlansIndexRoute
   ApiStartupsIndexRoute: typeof ApiStartupsIndexRoute
+  ApiSwaggerIndexRoute: typeof ApiSwaggerIndexRoute
   ApiUsersIndexRoute: typeof ApiUsersIndexRoute
   DemoStartSsrDataOnlyRoute: typeof DemoStartSsrDataOnlyRoute
   DemoStartSsrFullSsrRoute: typeof DemoStartSsrFullSsrRoute
@@ -285,6 +298,13 @@ declare module '@tanstack/react-router' {
       path: '/api/users'
       fullPath: '/api/users'
       preLoaderRoute: typeof ApiUsersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/swagger/': {
+      id: '/api/swagger/'
+      path: '/api/swagger'
+      fullPath: '/api/swagger'
+      preLoaderRoute: typeof ApiSwaggerIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/startups/': {
@@ -409,6 +429,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiFavoritesIndexRoute: ApiFavoritesIndexRoute,
   ApiPlansIndexRoute: ApiPlansIndexRoute,
   ApiStartupsIndexRoute: ApiStartupsIndexRoute,
+  ApiSwaggerIndexRoute: ApiSwaggerIndexRoute,
   ApiUsersIndexRoute: ApiUsersIndexRoute,
   DemoStartSsrDataOnlyRoute: DemoStartSsrDataOnlyRoute,
   DemoStartSsrFullSsrRoute: DemoStartSsrFullSsrRoute,
