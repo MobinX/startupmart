@@ -3,7 +3,9 @@ import { createServerFn } from '@tanstack/react-start'
 export const getPunkSongs = createServerFn({
   method: 'GET',
 }).handler(async () => {
+  console.log(process.env.FIREBASE_PRIVATE_KEY)
   console.log("Fetching punk songs...");
+  console.log(process.env.FIREBASE_PRIVATE_KEY_ID);
   return [
   { id: 1, name: 'Teenage Dirtbag', artist: 'Wheatus' },
   { id: 2, name: 'Smells Like Teen Spirit', artist: 'Nirvana' },
