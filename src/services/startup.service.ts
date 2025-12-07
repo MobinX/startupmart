@@ -1,5 +1,5 @@
 import { eq, and, sql } from 'drizzle-orm';
-import { Database } from '@/db';
+import { Database } from '@/src/db';
 import {
   startups,
   startupFinancials,
@@ -14,8 +14,8 @@ import {
   plans,
   userPlans,
   PlanAllowedField,
-} from '@/db/schema';
-import { AuthUser } from '@/lib/auth-middleware';
+} from '@/src/db/schema';
+import { AuthUser } from '@/src/lib/auth-middleware';
 import { z } from 'zod';
 
 export const createStartupSchema = z.object({

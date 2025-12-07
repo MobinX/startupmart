@@ -1,0 +1,36 @@
+{
+  "navbar": {
+    "name": "StartupMart",
+    "homeUrl": "/",
+    "mobileLinks": [
+      { "text": "Home", "href": "/" },
+      { "text": "Startups", "href": "/startups" },
+      { "text": "Investors", "href": "/investors" }
+    ],
+    "actions": [
+      { "text": "Sign In", "href": "/login", "isButton": false },
+      { "text": "Get Started", "href": "/signup", "isButton": true, "variant": "default" }
+    ]
+  },
+  "hero": {
+    "title": "Connecting Innovators with Investors",
+    "description": "The premier platform for discovering, funding, and growing the next generation of groundbreaking startups.",
+    "badge": {
+      "text": "Phase 2: User Authentication is in progress!",
+      "linkText": "See our Roadmap",
+      "href": "/plan"
+    },
+    "buttons": [
+      {
+        "href": "/signup",
+        "text": "I'm a Founder",
+        "variant": "default"
+      },
+      {
+        "href": "/startups",
+        "text": "I'm an Investor",
+        "variant": "outline"
+      }
+    ]
+  }
+}

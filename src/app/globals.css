@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url("./styles/utils.css");
+@import "../styles/utils.css";
 
 @import "tw-animate-css";
 

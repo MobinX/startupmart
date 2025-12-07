@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
-import { Database } from '@/db';
-import { plans, userPlans, PlanAllowedField } from '@/db/schema';
+import { Database } from '@/src/db';
+import { plans, userPlans, PlanAllowedField } from '@/src/db/schema';
 import { z } from 'zod';
 
 export const createPlanSchema = z.object({

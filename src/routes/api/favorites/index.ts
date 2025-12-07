@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { json } from '@tanstack/react-start';
-import { createDb } from '@/db';
-import { createServices } from '@/services';
-import { getAuthUser } from '@/lib/auth-middleware';
+import { createDb } from '@/src/db';
+import { createServices } from '@/src/services';
+import { getAuthUser } from '@/src/lib/auth-middleware';
 import { env } from 'cloudflare:workers';
 
 export const Route = createFileRoute('/api/favorites/')({

@@ -1,6 +1,6 @@
 import { verifyIdToken } from './firebase';
-import { createDb } from '@/db';
-import { users } from '@/db/schema';
+import { createDb } from '@/src/db';
+import { users } from '@/src/db/schema';
 import { eq } from 'drizzle-orm';
 import { env } from "cloudflare:workers"
 

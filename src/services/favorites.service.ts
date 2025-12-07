@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
-import { Database } from '@/db';
-import { favorites, startups } from '@/db/schema';
+import { Database } from '@/src/db';
+import { favorites, startups } from '@/src/db/schema';
 import { z } from 'zod';
 
 export const favoriteSchema = z.object({

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import * as firebaseClient from '@/lib/firebase-client';
+import * as firebaseClient from '@/src/lib/firebase-client';
 
 const {
   signInWithGoogle,
