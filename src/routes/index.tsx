@@ -35,7 +35,7 @@ function App() {
           </Badge>
         }
         buttons={hero.buttons as HeroButtonProps[]}
-        mockup={false}
+        
       />
     </div>
   );
