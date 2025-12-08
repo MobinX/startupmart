@@ -24,18 +24,16 @@ function App() {
         description={hero.description}
         badge={
           <Badge variant="outline" className="animate-appear">
-            <span className="text-muted-foreground">{hero.badge.text}</span>
-            <a
-              href={hero.badge.href}
-              className="flex items-center gap-1"
-            >
-              {hero.badge.linkText}
+            <span className="text-muted-foreground">
+              {hero.badge.text}
+            </span>
+            <a href={hero.badge.href} className="flex items-center gap-1">
+              
               <ArrowRightIcon className="size-3" />
             </a>
           </Badge>
         }
         buttons={hero.buttons as HeroButtonProps[]}
-        
       />
     </div>
   );

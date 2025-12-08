@@ -42,17 +42,17 @@ interface NavbarProps {
 export default function Navbar({
   logo = <LaunchUI />,
   name = "Launch UI",
-  homeUrl = "https://www.launchuicomponents.com/",
+  homeUrl = "/",
   mobileLinks = [
-    { text: "Getting Started", href: "https://www.launchuicomponents.com/" },
-    { text: "Components", href: "https://www.launchuicomponents.com/" },
-    { text: "Documentation", href: "https://www.launchuicomponents.com/" },
+    { text: "Getting Started", href: "/" },
+    { text: "Components", href: "/" },
+    { text: "Documentation", href: "/" },
   ],
   actions = [
-    { text: "Sign in", href: "https://www.launchuicomponents.com/", isButton: false },
+    { text: "Sign in", href: "/", isButton: false },
     {
       text: "Get Started",
-      href: "https://www.launchuicomponents.com/",
+      href: "/",
       isButton: true,
       variant: "default",
     },
@@ -83,6 +83,7 @@ export default function Navbar({
                   key={index}
                   variant={action.variant || "default"}
                   asChild
+                  className="hidden md:block"
                 >
                   <a href={action.href}>
                     {action.icon}
