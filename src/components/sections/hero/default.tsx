@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 import { cn } from "@/src/lib/utils";
 
 import { Badge } from "../../ui/badge";
-import { Button, buttonVariants } from "../../ui/button";
+import { Button, buttonVariants } from "@/src/components/animate-ui/components/buttons/button";
 import Glow from "../../ui/glow";
 import { Section } from "../../ui/section";
 
@@ -57,7 +57,7 @@ export default function Hero({
 
       text: "Github",
 
-      variant: "glow",
+      variant: "outline",
 
       icon: <Github className="mr-2 size-4" />,
 
@@ -121,7 +121,7 @@ export default function Hero({
         </div>
       </div>
       <div className="relative w-full pt-12">
-        <div data-slot="rising-small-illustration" className="relative w-full pt-[20%]">
+        <div data-slot="rising-small-illustration" className="relative w-full pt-[20%] animate-appear opacity-0 delay-1000">
           <div className="dark:border-brand bg-background/50 border-brand-foreground/80 absolute top-0 -left-[50%] z-10 w-[200%] overflow-hidden rounded-[100%] border-4 pt-[100%] dark:shadow-[0px_0px_12px_var(--brand),0px_0px_64px_var(--brand-foreground),0px_0px_12px_var(--brand)_inset]">
             <div className="animate-pulse-hover bg-brand-foreground/50 absolute top-0 -left-[50%] h-[200%] w-[200%] rounded-[100%]" style={{ maskImage: "radial-gradient(140% 95%, transparent 0%, transparent 35%, black 55%)" }}>
             </div>
@@ -130,7 +130,7 @@ export default function Hero({
             <div className="animate-pulse-hover bg-brand absolute -top-[5%] -left-[50%] h-[200%] w-[200%] rounded-[100%] dark:bg-white" style={{ maskImage: "radial-gradient(140% 120%, transparent 0%, transparent 38%, black 43%)" }}>
             </div>
           </div>
-          <Glow variant="center" />
+          <Glow variant="center" className="animate-appear opacity-0 delay-1000" />
         </div>
       </div>
     </Section>
